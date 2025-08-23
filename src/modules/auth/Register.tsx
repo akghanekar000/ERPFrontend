@@ -1,50 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import axios from "axios";
 
-export default function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const Register: React.FC = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
-  const onSubmit = (e: React.FormEvent) => {
+  const [message, setMessage] = useState<string>("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // simple local logging - integrate with real API later
-    console.log('Register:', { name, email });
-    alert('Registered (mock). Now login.');
-    setName('');
-    setEmail('');
-    setPassword('');
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/register`,
+        formData
+      );
+      setMessage(res.data.message || "User registered successfully!");
+    } catch (error: any) {
+      setMessage(error.response?.data?.message || "Error during registration");
+    }
   };
 
   return (
-    <div className="card" style={{ maxWidth: 520 }}>
-      <h3>Create account</h3>
-      <form onSubmit={onSubmit} className="row">
-        <inputq
-          className="input"
-          name="name"
-          placeholder="Full name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-lg rounded-2xl p-8 w-96"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+
         <input
-          className="input"
+          type="text"
+          name="name"
+          placeholder="Full Name"
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full p-2 mb-4 border rounded"
+          required
+        />
+
+        <input
+          type="email"
           name="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full p-2 mb-4 border rounded"
+          required
         />
+
         <input
-          className="input"
+          type="password"
           name="password"
           placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={handleChange}
+          className="w-full p-2 mb-4 border rounded"
+          required
         />
-        <button className="btn primary" type="submit">
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
+        >
           Register
         </button>
+
+        {message && (
+          <p className="text-center mt-4 text-sm text-gray-700">{message}</p>
+        )}
       </form>
     </div>
   );
-}
+};
+
+export default Register;
