@@ -1,13 +1,18 @@
+// src/main.tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import './index.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+// make sure root element exists
+let rootEl = document.getElementById('root');
+if (!rootEl) {
+  rootEl = document.createElement('div');
+  rootEl.id = 'root';
+  document.body.prepend(rootEl);
+}
+
+ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <App />
   </React.StrictMode>
 );
