@@ -19,7 +19,7 @@ export default function Register() {
     <div className="card" style={{ maxWidth: 520 }}>
       <h3>Create account</h3>
       <form onSubmit={onSubmit} className="row">
-        <input
+        <inputq
           className="input"
           name="name"
           placeholder="Full name"
