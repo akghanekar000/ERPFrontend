@@ -1,40 +1,66 @@
 // src/components/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from 'react';
 
-type AuthState = { user: any | null; loading: boolean };
-type Ctx = AuthState & { login: (t: string) => void; logout: () => void };
+type AuthContextType = {
+  user: string | null;
+  login: (username: string) => void;
+  logout: () => void;
+  ready: boolean;
+};
 
-const AuthContext = createContext<Ctx | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
+  // simulate reading persisted auth (localStorage) safely
   useEffect(() => {
-    // example: load token from storage and set user
-    const token = localStorage.getItem('auth_token');
-    setUser(token ? { token } : null);
-    setLoading(false);
+    try {
+      const stored = localStorage.getItem('app_user');
+      if (stored) setUser(stored);
+    } catch (e) {
+      console.warn('AuthProvider: failed to read localStorage', e);
+    } finally {
+      setReady(true);
+    }
   }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem('auth_token', token);
-    setUser({ token });
+  const login = (username: string) => {
+    setUser(username);
+    try {
+      localStorage.setItem('app_user', username);
+    } catch (e) {
+      console.warn('AuthProvider: failed to write localStorage', e);
+    }
   };
+
   const logout = () => {
-    localStorage.removeItem('auth_token');
     setUser(null);
+    try {
+      localStorage.removeItem('app_user');
+    } catch (e) {
+      console.warn('AuthProvider: failed to remove localStorage', e);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, ready }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-}
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
