@@ -1,5 +1,7 @@
+// src/routes.tsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
 import Login from '@modules/auth/Login';
 import CustomerList from './modules/customers/CustomerList';
 import AddCustomer from './modules/customers/AddCustomer';
@@ -10,6 +12,10 @@ import InvoiceList from './modules/invoices/InvoiceList';
 import SalesReport from '@modules/reports/SalesReport';
 import BusinessInfo from '@modules/settings/BusinessInfo';
 
+// pages (public / standalone pages)
+import RegisterPage from './pages/RegisterPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+
 const Private: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const token = localStorage.getItem('auth_token');
   if (!token) return <Navigate to="/login" replace />;
@@ -19,7 +25,12 @@ const Private: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+      {/* Private (authenticated) routes */}
       <Route
         path="/"
         element={
@@ -92,6 +103,9 @@ export default function AppRoutes() {
           </Private>
         }
       />
+
+      {/* 404 fallback: redirect unknown routes to home (or change to a NotFound page) */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
