@@ -1,21 +1,110 @@
-/* src/index.css - minimal safe reset and overrides to avoid a full-screen royalblue hiding your UI */
+/* src/index.css – global reset + theme + improved base UI */
+
+/* Theme variables */
+:root {
+  --bg: #ffffff;
+  --muted: #6b7280;
+  --accent: #111827;
+  --danger: #b91c1c;
+  --primary: #2563eb; /* blue-600 */
+  --primary-hover: #1d4ed8;
+  --radius: 0.5rem;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Reset + full height */
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial;
-  background: #ffffff !important; /* override accidental full-screen backgrounds */
-  color: #111;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg) !important; /* fix accidental royal blue screen */
+  color: var(--accent);
+  line-height: 1.5;
 }
 
+/* Ensure app root is always above overlays */
 #app-root-container {
   position: relative;
-  z-index: 9999; /* ensure app sits above accidental overlays */
+  z-index: 10;
 }
 
+/* Universal reset */
 * {
   box-sizing: border-box;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+p {
+  margin: 0 0 1rem 0;
+  color: var(--muted);
+}
+
+/* Form elements */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--accent);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  padding: 0.625rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  transition: background 0.2s, transform 0.1s;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Utility shadows */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+
+/* Layout helpers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
