@@ -1,24 +1,56 @@
-// src/services/auth.service.ts
-import { API, handleResponse, getAuthHeaders } from './_fetch';
+import { API } from "./_fetch";
 
 export async function login(email: string, password: string) {
   const res = await fetch(`${API}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  const data = await handleResponse(res);
-  if (data?.token) localStorage.setItem('auth_token', data.token);
+
+  const text = await res.text();
+  let data;
+  try { data = text ? JSON.parse(text) : null; } catch(e) { data = { raw: text } }
+
+  if (!res.ok) {
+    const message = (data && (data.message || data.error)) || res.statusText || "Login failed";
+    throw new Error(message);
+  }
+
+  const token = data?.token;
+  if (!token) throw new Error("No token returned");
+  localStorage.setItem("auth_token", token);
+  return data;
+}
+
+export async function register(payload: {
+  name: string;
+  email: string;
+  password: string;
+  company?: string;
+  mobile?: string;
+  gstin?: string;
+}) {
+  const res = await fetch(`${API}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  let data;
+  try { data = text ? JSON.parse(text) : null; } catch(e) { data = { raw: text } }
+
+  if (!res.ok) {
+    const message = (data && (data.message || data.error)) || res.statusText || "Registration failed";
+    throw new Error(message);
+  }
+
+  const token = data?.token;
+  if (!token) throw new Error("No token returned from server");
+  localStorage.setItem("auth_token", token);
   return data;
 }
 
 export function logout() {
-  localStorage.removeItem('auth_token');
-}
-
-export async function me() {
-  const res = await fetch(`${API}/api/auth/me`, {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-  });
-  return handleResponse(res);
+  localStorage.removeItem("auth_token");
 }
