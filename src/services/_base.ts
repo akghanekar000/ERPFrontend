@@ -1,5 +1,5 @@
 // src/services/_base.ts
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = "https://erp-backend-vo7r.onrender.com";
 
 export function getApiBase() {
   return API_BASE;
