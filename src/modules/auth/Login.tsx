@@ -1,7 +1,7 @@
 // inside your login component
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../components/AuthContext';
 
 export default function LoginPage() {
   const { login } = useAuth();
