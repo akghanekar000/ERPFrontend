@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ClerkProvider } from "@clerk/clerk-react";
 
-const PUBLISHABLE_KEY = "your-clerk-publishable-key"; // 🔑 from Clerk dashboard
+const PUBLISHABLE_KEY = "pk_test_bG92aW5nLWJsdWViaXJkLTUwLmNsZXJrLmFjY291bnRzLmRldiQ"; // 🔑 from Clerk dashboard
 
 // make sure root element exists
 let rootEl = document.getElementById("root");
