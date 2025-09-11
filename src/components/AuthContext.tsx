@@ -1,4 +1,4 @@
-// src/components/AuthContext.tsx
+// src/components/AuthContext.tsx (Clerk adapter)
 import React, { createContext, useContext, ReactNode } from "react";
 import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
 
@@ -23,23 +23,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { isSignedIn, user, isLoaded } = useUser();
   const { signOut } = useClerkAuth();
 
-  // Convert Clerk user object to your User type
   const convertedUser: User | null = user
     ? {
         id: user.id,
         email: user.primaryEmailAddress?.emailAddress,
         name: user.fullName,
-        ...user, // keep other Clerk fields if needed
+        ...user,
       }
     : null;
 
-  // Dummy login & refresh since Clerk handles it via UI
   const login = async () => {
     throw new Error("Use Clerk SignIn component instead of login()");
   };
 
   const refresh = async () => {
-    return ""; // Clerk auto-refreshes, so no manual refresh
+    return "";
   };
 
   const logout = () => {
@@ -47,9 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user: convertedUser, ready: isLoaded, login, logout, refresh }}
-    >
+    <AuthContext.Provider value={{ user: convertedUser, ready: isLoaded, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );
