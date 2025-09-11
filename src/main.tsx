@@ -3,9 +3,17 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ClerkProvider } from "@clerk/clerk-react";
+import "./index.css";
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "REPLACE_WITH_CLERK_PUBLISHABLE_KEY";
+// Import your Publishable Key
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+if (!PUBLISHABLE_KEY) {
+  // Fail early with a clear message
+  throw new Error("Missing Publishable Key. Add VITE_CLERK_PUBLISHABLE_KEY to your .env.local");
+}
+
+// ensure root exists (keeps your previous logic)
 let rootEl = document.getElementById("root");
 if (!rootEl) {
   rootEl = document.createElement("div");

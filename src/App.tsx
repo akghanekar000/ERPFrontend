@@ -2,42 +2,28 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SignIn, SignUp } from "@clerk/clerk-react";
-import HomePage from "./pages/Home";
-import LoginPage from "./pages/LoginPage"; // if you kept
-import RegisterPage from "./pages/RegisterPage"; // optional custom wrapper
-import DashboardPage from "./pages/DashboardPage"; // your existing pages
+import Home from "./pages/Home";
+import DashboardPage from "./pages/DashboardPage";
+import Header from "./components/Header";  // header with SignIn/SignOut buttons
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Header />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Home />} />
 
-        {/* Clerk sign-in / sign-up routes — important: use "/*" on the route path */}
-        <Route
-          path="/sign-in/*"
-          element={<SignIn path="/sign-in" routing="path" />}
-        />
-        <Route
-          path="/sign-up/*"
-          element={<SignUp path="/sign-up" routing="path" />}
-        />
+        {/* Clerk routes: include the wildcard "/*" so Clerk internal nested routes work */}
+        <Route path="/sign-in/*" element={<SignIn path="/sign-in" routing="path" />} />
+        <Route path="/sign-up/*" element={<SignUp path="/sign-up" routing="path" />} />
 
-        {/* Optional: user-facing aliases */}
-        <Route
-          path="/login"
-          element={<SignIn path="/sign-in" routing="path" />}
-        />
-        <Route
-          path="/register"
-          element={<SignUp path="/sign-up" routing="path" />}
-        />
+        {/* friendly aliases */}
+        <Route path="/login" element={<SignIn path="/sign-in" routing="path" />} />
+        <Route path="/register" element={<SignUp path="/sign-up" routing="path" />} />
 
         <Route path="/dashboard" element={<DashboardPage />} />
-        {/* other routes... */}
 
-        {/* catch-all: show 404 page or redirect */}
-        <Route path="*" element={<div>404 - Page not found</div>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
