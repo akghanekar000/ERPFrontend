@@ -2,15 +2,15 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-import Login from '@modules/auth/Login';
+import Login from './modules/auth/Login';
 import CustomerList from './modules/customers/CustomerList';
 import AddCustomer from './modules/customers/AddCustomer';
 import ProductList from './modules/products/ProductList';
 import AddProduct from './modules/products/AddProduct';
 import CreateInvoice from './modules/invoices/CreateInvoice';
 import InvoiceList from './modules/invoices/InvoiceList';
-import SalesReport from '@modules/reports/SalesReport';
-import BusinessInfo from '@modules/settings/BusinessInfo';
+import SalesReport from './modules/reports/SalesReport';
+import BusinessInfo from './modules/settings/BusinessInfo';
 
 // pages (public / standalone pages)
 import RegisterPage from './pages/RegisterPage';

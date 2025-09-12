@@ -1,71 +1,30 @@
 // src/App.tsx
-import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './components/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import ErrorBoundary from './components/ErrorBoundary';
-import './index.css'; // ensures global safe styles (see file below)
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SignIn, SignUp } from "@clerk/clerk-react";
+import Home from "./pages/Home";
+import DashboardPage from "./pages/DashboardPage";
+import Header from "./components/Header";  // header with SignIn/SignOut buttons
 
-/**
- * Try to load real pages; if import fails (file missing) we fall back
- * to an inline placeholder so the app never crashes on missing page files.
- */
-const LazyHome = React.lazy(() =>
-  import('./pages/Home').catch(() =>
-    Promise.resolve({
-      default: () => (
-        <div style={{ padding: 20 }}>Home page not found — placeholder</div>
-      ),
-    })
-  )
-);
-
-const LazyLogin = React.lazy(() =>
-  import('./pages/LoginPage').catch(() =>
-    Promise.resolve({
-      default: () => (
-        <div style={{ padding: 20 }}>Login page not found — placeholder</div>
-      ),
-    })
-  )
-);
-
-const NotFound = () => (
-  <div style={{ padding: 20 }}>
-    <h2>404 — Not Found</h2>
-  </div>
-);
-
-const App: React.FC = () => {
+export default function App() {
   return (
-    <AuthProvider>
-      <ErrorBoundary>
-        <Router>
-          <div
-            id="app-root-container"
-            style={{ minHeight: '100vh', position: 'relative' }}
-          >
-            <Suspense
-              fallback={<div style={{ padding: 20 }}>Loading page…</div>}
-            >
-              <Routes>
-                <Route path="/login" element={<LazyLogin />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <LazyHome />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </div>
-        </Router>
-      </ErrorBoundary>
-    </AuthProvider>
-  );
-};
+    <BrowserRouter>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Home />} />
 
-export default App;
+        {/* Clerk routes: include the wildcard "/*" so Clerk internal nested routes work */}
+        <Route path="/sign-in/*" element={<SignIn path="/sign-in" routing="path" />} />
+        <Route path="/sign-up/*" element={<SignUp path="/sign-up" routing="path" />} />
+
+        {/* friendly aliases */}
+        <Route path="/login" element={<SignIn path="/sign-in" routing="path" />} />
+        <Route path="/register" element={<SignUp path="/sign-up" routing="path" />} />
+
+        <Route path="/dashboard" element={<DashboardPage />} />
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
