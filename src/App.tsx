@@ -6,6 +6,10 @@ import Home from "./pages/Home";
 import DashboardPage from "./pages/DashboardPage";
 import Header from "./components/Header";  // header with SignIn/SignOut buttons
 
+
+// Only include Clerk routes when a publishable key is present
+const CLERK_KEY = typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY;
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -14,12 +18,12 @@ export default function App() {
         <Route path="/" element={<Home />} />
 
         {/* Clerk routes: include the wildcard "/*" so Clerk internal nested routes work */}
-        <Route path="/sign-in/*" element={<SignIn path="/sign-in" routing="path" />} />
-        <Route path="/sign-up/*" element={<SignUp path="/sign-up" routing="path" />} />
+        {CLERK_KEY && <Route path="/sign-in/*" element={<SignIn path="/sign-in" routing="path" />} />}
+        {CLERK_KEY && <Route path="/sign-up/*" element={<SignUp path="/sign-up" routing="path" />} />}
 
         {/* friendly aliases */}
-        <Route path="/login" element={<SignIn path="/sign-in" routing="path" />} />
-        <Route path="/register" element={<SignUp path="/sign-up" routing="path" />} />
+        {CLERK_KEY && <Route path="/login" element={<SignIn path="/sign-in" routing="path" />} />}
+        {CLERK_KEY && <Route path="/register" element={<SignUp path="/sign-up" routing="path" />} />}
 
         <Route path="/dashboard" element={<DashboardPage />} />
 
