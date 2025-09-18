@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getProducts, Product } from '../../services/products.service';
+import { getProduct, Product } from '../../services/products.service';
 import { useAuth } from '../../components/AuthContext';
 
 export default function ProductList() {
