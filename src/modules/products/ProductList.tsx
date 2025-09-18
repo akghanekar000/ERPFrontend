@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProducts, Product } from '../../services/products.service';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../components/AuthContext';
 
 export default function ProductList() {
   const [items, setItems] = useState<Product[]>([]);

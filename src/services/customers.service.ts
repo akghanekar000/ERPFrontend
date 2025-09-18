@@ -7,6 +7,7 @@ export type Customer = {
   name: string;
   phone?: string;
   email?: string;
+  gst?: string;
   address?: string;
 };
 
@@ -24,7 +25,7 @@ export async function getCustomer(id: string): Promise<Customer> {
   return handleResponse(res);
 }
 
-export async function createCustomer(payload: Partial<Customer>) {
+export async function addCustomer(payload: Partial<Customer>) {
   const res = await fetch(`${API}/api/customers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
