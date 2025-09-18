@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Table from '@components/Table';
 import Button from '@components/Button';
 import Input from '@components/Input';
@@ -8,16 +8,12 @@ import { listCustomers, removeCustomer } from '@services/customers.service';
 export default function CustomerList() {
   const [q, setQ] = useState('');
   const [tick, setTick] = useState(0);
-  const [customers, setCustomers] = useState([]);
-
-  useEffect(() => {
-    listCustomers().then(setCustomers);
-  }, [tick]);
+  const customers = useMemo(() => listCustomers(), [tick]);
 
   const filtered = customers.filter(
     (c) =>
       c.name.toLowerCase().includes(q.toLowerCase()) ||
-      (c.phone || '').includes(q) ||
+      c.phone.includes(q) ||
       (c.gst || '').toLowerCase().includes(q.toLowerCase())
   );
 
