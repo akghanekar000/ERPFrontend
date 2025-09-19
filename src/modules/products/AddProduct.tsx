@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Input from '@components/Input';
-import Button from '@components/Button';
-import { addProduct } from '@services/products.service';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import { getProduct } from '../../services/products.service';
 import { useNavigate } from 'react-router-dom';
 
 export default function AddProduct() {
