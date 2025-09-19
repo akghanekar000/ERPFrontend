@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
-import { getProduct } from '../../services/products.service';
+import { createProduct } from '../../services/products.service';
 import { useNavigate } from 'react-router-dom';
 
 export default function AddProduct() {
@@ -13,7 +13,7 @@ export default function AddProduct() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || price === '') return alert('Name and price are required');
-    addProduct({
+    createProduct({
       name,
       price: Number(price),
       stock: stock === '' ? undefined : Number(stock),
