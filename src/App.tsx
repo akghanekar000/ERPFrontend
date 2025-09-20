@@ -8,7 +8,7 @@ import Header from "./components/Header";  // header with SignIn/SignOut buttons
 import NotFound from "./pages/NotFound";
 
 // Only include Clerk routes when a publishable key is present
-const CLERK_KEY = typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY;
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 export default function App() {
   return (
