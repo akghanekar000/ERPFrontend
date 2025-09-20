@@ -5,7 +5,7 @@ import { SignIn, SignUp } from "@clerk/clerk-react";
 import Home from "./pages/Home";
 import DashboardPage from "./pages/DashboardPage";
 import Header from "./components/Header";  // header with SignIn/SignOut buttons
-
+import NotFound from "./pages/NotFound";
 
 // Only include Clerk routes when a publishable key is present
 const CLERK_KEY = typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY;
