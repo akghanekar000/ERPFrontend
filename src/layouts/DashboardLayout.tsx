@@ -1,14 +1,11 @@
 // src/layouts/DashboardLayout.tsx
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // Fallback for missing user
-  const userName = user?.name || "Guest";
-
   return (
     <div className="min-h-screen grid grid-cols-[240px_1fr]">
       <aside className="bg-gray-100 p-4 border-r">
@@ -17,51 +14,31 @@ export default function DashboardLayout() {
           <NavLink
             to="/"
             end
-            className={({ isActive }) =>
-              isActive
-                ? 'font-semibold bg-gray-200 rounded px-2 py-1'
-                : 'px-2 py-1 rounded'
-            }
+            className={({ isActive }) => (isActive ? 'font-semibold' : '')}
           >
             Dashboard
           </NavLink>
           <NavLink
             to="/customers"
-            className={({ isActive }) =>
-              isActive
-                ? 'font-semibold bg-gray-200 rounded px-2 py-1'
-                : 'px-2 py-1 rounded'
-            }
+            className={({ isActive }) => (isActive ? 'font-semibold' : '')}
           >
             Customers
           </NavLink>
           <NavLink
             to="/products"
-            className={({ isActive }) =>
-              isActive
-                ? 'font-semibold bg-gray-200 rounded px-2 py-1'
-                : 'px-2 py-1 rounded'
-            }
+            className={({ isActive }) => (isActive ? 'font-semibold' : '')}
           >
             Products
           </NavLink>
           <NavLink
             to="/invoices"
-            className={({ isActive }) =>
-              isActive
-                ? 'font-semibold bg-gray-200 rounded px-2 py-1'
-                : 'px-2 py-1 rounded'
-            }
+            className={({ isActive }) => (isActive ? 'font-semibold' : '')}
           >
             Invoices
           </NavLink>
           <NavLink
             to="/reports"
-            className={({ isActive }) =>
-              isActive
-                ? 'font-semibold bg-gray-200 rounded px-2 py-1'
-                : 'px-2 py-1 rounded'
-            }
+            className={({ isActive }) => (isActive ? 'font-semibold' : '')}
           >
             Reports
           </NavLink>
@@ -72,7 +49,7 @@ export default function DashboardLayout() {
           <div />
           <div className="flex items-center gap-3">
             <div className="text-sm">
-              {userName}
+              {user?.name} <span className="opacity-60">({user?.role})</span>
             </div>
             <button
               className="px-3 py-1 border rounded"
