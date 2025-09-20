@@ -11,24 +11,20 @@ import NotFound from "./pages/NotFound";
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-
-        {/* Clerk routes: include the wildcard "/*" so Clerk internal nested routes work */}
-        {CLERK_KEY && <Route path="/sign-in/*" element={<SignIn path="/sign-in" routing="path" />} />}
-        {CLERK_KEY && <Route path="/sign-up/*" element={<SignUp path="/sign-up" routing="path" />} />}
-
-        {/* friendly aliases */}
-        {CLERK_KEY && <Route path="/login" element={<SignIn path="/sign-in" routing="path" />} />}
-        {CLERK_KEY && <Route path="/register" element={<SignUp path="/sign-up" routing="path" />} />}
-
-        <Route path="/dashboard" element={<DashboardPage />} />
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  );
+        return (
+                <BrowserRouter>
+                        <Header />
+                        <Routes>
+                                <Route path="/" element={<Home />} />
+                                {/* Clerk routes: include the wildcard "/*" so Clerk internal nested routes work */}
+                                {CLERK_KEY && <Route path="/sign-in/*" element={<SignIn path="/sign-in" routing="path" />} />}
+                                {CLERK_KEY && <Route path="/sign-up/*" element={<SignUp path="/sign-up" routing="path" />} />}
+                                {/* friendly aliases */}
+                                {CLERK_KEY && <Route path="/login" element={<SignIn path="/sign-in" routing="path" />} />}
+                                {CLERK_KEY && <Route path="/register" element={<SignUp path="/sign-up" routing="path" />} />}
+                                <Route path="/dashboard" element={<DashboardPage />} />
+                                <Route path="*" element={<NotFound />} />
+                        </Routes>
+                </BrowserRouter>
+        );
 }
