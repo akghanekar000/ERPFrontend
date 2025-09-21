@@ -1,3 +1,17 @@
+// Add Invoice type for InvoiceDetailPage
+export type Invoice = {
+  id?: string;
+  _id?: string;
+  customer: { name: string } | string;
+  items: Array<{
+    product: { name: string } | string;
+    qty: number;
+    price: number;
+  }>;
+  subtotal: number;
+  tax: number;
+  total: number;
+};
 // src/services/invoices.service.ts
 // src/services/invoices.service.ts
 import { API, handleResponse, getAuthHeaders } from './_fetch';
