@@ -8,6 +8,7 @@ export type Product = {
   price: number;
   sku?: string;
   description?: string;
+  stock?: number;
 };
 
 export async function listProducts(): Promise<Product[]> {
