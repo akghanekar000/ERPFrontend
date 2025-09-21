@@ -29,17 +29,35 @@ export default function InvoicesPage() {
 
   async function add() {
     if (!customer || !product) return;
-    await createInvoice({ customer, items: [{ product, qty }], tax });
-    setCustomer('');
-    setProduct('');
-    setQty(1);
-    setTax(0);
-    load();
+    try {
+  const selectedProduct = products.find((p) => p.id === product);
+      const price = selectedProduct ? selectedProduct.price : 0;
+      const subtotal = price * qty;
+      const total = subtotal + tax;
+      await createInvoice({
+        customerId: customer,
+        items: [{ productId: product, qty, price }],
+        tax,
+        subtotal,
+        total,
+      });
+      setCustomer('');
+      setProduct('');
+      setQty(1);
+      setTax(0);
+      load();
+    } catch (err) {
+      alert('Failed to create invoice.');
+    }
   }
 
   async function remove(id: string) {
-    await deleteInvoice(id);
-    load();
+    try {
+      await deleteInvoice(id);
+      load();
+    } catch (err) {
+      alert('Failed to delete invoice.');
+    }
   }
 
   return (
@@ -48,7 +66,7 @@ export default function InvoicesPage() {
         <select
           className="border rounded p-2"
           value={customer}
-          onChange={(e) => setCustomer(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomer(e.target.value)}
         >
           <option value="">Select customer</option>
           {customers.map((c) => (
@@ -60,11 +78,11 @@ export default function InvoicesPage() {
         <select
           className="border rounded p-2"
           value={product}
-          onChange={(e) => setProduct(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setProduct(e.target.value)}
         >
           <option value="">Select product</option>
           {products.map((p) => (
-            <option key={p._id} value={p._id}>
+            <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
@@ -73,14 +91,14 @@ export default function InvoicesPage() {
           type="number"
           className="border rounded p-2 w-24"
           value={qty}
-          onChange={(e) => setQty(parseInt(e.target.value || '1'))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQty(parseInt(e.target.value || '1'))}
         />
         <input
           type="number"
           className="border rounded p-2 w-24"
           placeholder="Tax"
           value={tax}
-          onChange={(e) => setTax(parseFloat(e.target.value || '0'))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTax(parseFloat(e.target.value || '0'))}
         />
         <button className="px-3 py-2 border rounded" onClick={add}>
           Create
@@ -96,15 +114,15 @@ export default function InvoicesPage() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr key={r._id}>
-              <td>{(r.customer as any)?.name || r.customer}</td>
+          {rows.filter(r => r.id || r._id).map((r) => (
+            <tr key={r.id ?? r._id}>
+              <td>{typeof r.customer === 'object' ? r.customer.name : r.customer}</td>
               <td className="text-center">{r.items.length}</td>
-              <td className="text-center">{r.total}</td>
+              <td className="text-center">{r.total ?? 0}</td>
               <td className="text-right">
                 <button
                   className="px-2 py-1 border rounded"
-                  onClick={() => remove(r._id)}
+                  onClick={() => remove((r.id ?? r._id) as string)}
                 >
                   Delete
                 </button>

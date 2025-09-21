@@ -63,13 +63,13 @@ export default function ProductsPage() {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r._id}>
+            <tr key={r.id}>
               <td>{r.name}</td>
               <td className="text-center">{r.price}</td>
               <td className="text-right">
                 <button
                   className="px-2 py-1 border rounded"
-                  onClick={() => remove(r._id)}
+                  onClick={() => remove(r.id)}
                 >
                   Delete
                 </button>
