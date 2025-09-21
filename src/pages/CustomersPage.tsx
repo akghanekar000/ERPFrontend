@@ -63,13 +63,13 @@ export default function CustomersPage() {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r._id}>
+            <tr key={r.id}>
               <td>{r.name}</td>
               <td>{r.email}</td>
               <td className="text-right">
                 <button
                   className="px-2 py-1 border rounded"
-                  onClick={() => remove(r._id)}
+                  onClick={() => remove(r.id)}
                 >
                   Delete
                 </button>

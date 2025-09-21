@@ -13,7 +13,7 @@ export default function AddProduct() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || price === '') return alert('Name and price are required');
-    addProduct({
+    getProduct({
       name,
       price: Number(price),
       stock: stock === '' ? undefined : Number(stock),
