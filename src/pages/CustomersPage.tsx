@@ -1,7 +1,7 @@
 // src/pages/CustomersPage.tsx
 import React, { useEffect, useState } from 'react';
 import {
-  createCustomer,
+  addCustomer,
   deleteCustomer,
   listCustomers,
   updateCustomer,
@@ -23,7 +23,7 @@ export default function CustomersPage() {
 
   async function add() {
     if (!name) return;
-    await createCustomer({ name, email });
+    await addCustomer({ name, email });
     setName('');
     setEmail('');
     load();
