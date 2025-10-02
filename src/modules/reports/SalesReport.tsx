@@ -1,28 +1,28 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { listInvoices } from '../../services/invoices.service';
 import Input from '../../components/Input';
-import { Invoice } from '../../services/invoices.service'; 
 
 export default function SalesReport() {
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<any[]>([]);
+  const [total, setTotal] = useState('0.00');
 
-  React.useEffect(() => {
-    async function fetchInvoices() {
-      const data = await listInvoices();
-      setInvoices(data ?? []);
-    }
-    fetchInvoices();
+  useEffect(() => {
+    listInvoices().then(setInvoices);
   }, []);
 
-  const within = invoices.filter((i: Invoice) => {
-    const d = i.date.slice(0, 10);
-    if (from && d < from) return false;
-    if (to && d > to) return false;
-    return true;
-  });
-  const total = within.reduce((s: number, i: Invoice) => s + i.total, 0).toFixed(2);
+  useEffect(() => {
+    const within = invoices.filter((i: any) => {
+      const d = i.date?.slice(0, 10);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+    setFilteredInvoices(within);
+    setTotal(within.reduce((s: number, i: any) => s + (i.total || 0), 0).toFixed(2));
+  }, [invoices, from, to]);
 
   return (
     <div className="card">
@@ -33,11 +33,7 @@ export default function SalesReport() {
           value={from}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFrom(e.target.value)}
         />
-        <Input
-          type="date"
-          value={to}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTo(e.target.value)}
-        />
+        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </div>
       <div>Total Sales: ₹ {total}</div>
     </div>
