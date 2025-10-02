@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { listCustomers } from '../../services/customers.service';
@@ -7,36 +7,32 @@ import { createInvoice } from '../../services/invoices.service';
 import { calculateGST } from '../../utils/calculateGST';
 import { v4 as uuid } from 'uuid';
 import { useNavigate } from 'react-router-dom';
+import { Product } from '../../services/products.service';
+import { Customer } from '../../services/customers.service';
 
 export default function CreateInvoice() {
   const nav = useNavigate();
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoiceNumber, setInvoiceNumber] = useState(
     () => 'INV-' + Math.random().toString(36).slice(2, 7).toUpperCase()
   );
   const [date, setDate] = useState(() => new Date().toISOString());
   const [customerId, setCustomerId] = useState('');
   const [gstRate, setGstRate] = useState<number | ''>(18);
-  const [items, setItems] = useState<
-    {
-      id: string;
-      productId: string;
-      name: string;
-      price: number;
-      qty: number;
-      amount: number;
-    }[]
-  >([]);
+  const [items, setItems] = useState<{
+    id: string;
+    productId: string;
+    name: string;
+    price: number;
+    qty: number;
+    amount: number;
+  }[]>([]);
 
   useEffect(() => {
-    listCustomers().then(setCustomers);
     listProducts().then(setProducts);
+    listCustomers().then(setCustomers);
   }, []);
-
-  useEffect(() => {
-    if (customers.length && !customerId) setCustomerId(customers[0].id);
-  }, [customers]);
 
   const addItem = () => {
     if (!products.length) return alert('Add products first');
@@ -53,6 +49,7 @@ export default function CreateInvoice() {
       },
     ]);
   };
+
   const updateItem =
     (id: string, field: 'productId' | 'qty') =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -60,7 +57,7 @@ export default function CreateInvoice() {
         prev.map((it) => {
           if (it.id !== id) return it;
           if (field === 'productId') {
-            const p = products.find((x) => x.id === e.target.value)!;
+            const p = products.find((x: Product) => x.id === e.target.value)!;
             return {
               ...it,
               productId: p.id,
@@ -75,31 +72,28 @@ export default function CreateInvoice() {
         })
       );
     };
+
   const removeItem = (id: string) =>
     setItems((s) => s.filter((i) => i.id !== id));
 
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
-  const tax = calculateGST(subtotal, Number(gstRate || 0));
-  const total = +(subtotal + tax).toFixed(2);
+  const gstAmount = calculateGST(Number(subtotal) || 0, Number(gstRate) || 0);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const customer = customers.find((c) => c.id === customerId);
+    const customer = customers.find((c: Customer) => c.id === customerId);
     if (!customer) return alert('Select customer');
     if (!items.length) return alert('Add at least one item');
-    try {
-      await createInvoice({
-        invoiceNumber,
-        customerId,
-        items: items.map(({ productId, qty, price }) => ({ productId, qty, price })),
-        subtotal: +subtotal.toFixed(2),
-        tax,
-        total,
-      });
-      nav('/invoices');
-    } catch (err) {
-      alert('Failed to create invoice.');
-    }
+
+    await createInvoice({
+      invoiceNumber,
+      customerId,
+      items,
+      subtotal,
+      tax: gstAmount,
+      total: subtotal + gstAmount,
+    });
+    nav('/invoices');
   };
 
   return (
@@ -120,10 +114,10 @@ export default function CreateInvoice() {
           <select
             className="input"
             value={customerId}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomerId(e.target.value)}
+            onChange={(e) => setCustomerId(e.target.value)}
           >
             <option value="">Select customer</option>
-            {customers.map((c) => (
+            {customers.map((c: Customer) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
@@ -133,7 +127,7 @@ export default function CreateInvoice() {
             type="number"
             placeholder="GST %"
             value={gstRate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(e) =>
               setGstRate(e.target.value === '' ? '' : Number(e.target.value))
             }
           />
@@ -142,7 +136,7 @@ export default function CreateInvoice() {
         <div className="card" style={{ width: '100%' }}>
           <div className="toolbar">
             <strong>Items</strong>
-            <Button onClick={addItem} disabled={!products.length}>Add Item</Button>
+            <Button onClick={addItem}>Add Item</Button>
           </div>
           <table>
             <thead>
@@ -163,7 +157,7 @@ export default function CreateInvoice() {
                       value={it.productId}
                       onChange={updateItem(it.id, 'productId')}
                     >
-                      {products.map((p) => (
+                      {products.map((p: Product) => (
                         <option key={p.id} value={p.id}>
                           {p.name}
                         </option>
@@ -201,12 +195,12 @@ export default function CreateInvoice() {
             </div>
             <div className="row">
               <div className="muted">GST ({gstRate || 0}%)</div>
-              <div>₹ {tax.toFixed(2)}</div>
+              <div>₹ {gstAmount.toFixed(2)}</div>
             </div>
             <div className="row">
               <div className="muted">Total</div>
               <div>
-                <strong>₹ {total.toFixed(2)}</strong>
+                <strong>₹ {(subtotal + gstAmount).toFixed(2)}</strong>
               </div>
             </div>
           </div>
