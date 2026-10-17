@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "jspdf": "^2.5.2",
     "react-toastify": "^10.0.6",
     "papaparse": "^5.4.1",
     "@clerk/clerk-react": "^5.46.2",
