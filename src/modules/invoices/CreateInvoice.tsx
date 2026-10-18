@@ -5,6 +5,14 @@ import { v4 as uuid } from 'uuid';
 import { listCustomers } from '../../services/customers.service';
 import { listProducts } from '../../services/products.service';
 import { createInvoice } from '../../services/invoices.service';
+import { getCompany } from '../../services/company.service';
+import type { Company } from '../../services/company.service';
+import InvoicePreview from './InvoicePreview';
+import type {
+  PreviewCompany,
+  PreviewCustomer,
+  PreviewItem,
+} from './InvoicePreview';
 import type { Product } from '../../services/products.service';
 import type { Customer } from '../../services/customers.service';
 
@@ -47,7 +55,9 @@ export default function CreateInvoice() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [company, setCompany] = useState<Company | null>(null);
   const [customerId, setCustomerId] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<InvoiceLine[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,11 +67,14 @@ export default function CreateInvoice() {
   useEffect(() => {
     let active = true;
 
-    Promise.all([listCustomers(), listProducts()])
-      .then(([customerData, productData]) => {
-        if (!active) return;
-        setCustomers(customerData);
-        setProducts(productData);
+    Promise.all([listCustomers(), listProducts(), getCompany()])
+      .then(([customerData, productData, companyData]) => {
+  if (!active) return;
+
+  setCustomers(customerData);
+  setProducts(productData);
+  setCompany(companyData);
+
       })
       .catch((err: unknown) => {
         if (active) {
@@ -558,7 +571,28 @@ export default function CreateInvoice() {
               </span>
             </div>
           </div>
+          
+          <button
+    type="button"
+    onClick={() => {
+      if (!customerId) {
+        setError('Please select a customer before previewing.');
+        return;
+      }
 
+      if (!items.length || lines.some((item) => !item.product)) {
+        setError('Please add at least one valid product before previewing.');
+        return;
+      }
+
+      setError('');
+      setShowPreview(true);
+    }}
+      disabled={!customers.length || !products.length}
+      className="mt-6 mr-3 w-full rounded-xl border border-blue-600 bg-white px-5 py-3.5 font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50 sm:w-auto"
+  >
+    Preview Invoice
+  </button>
           <button
             type="submit"
             disabled={saving || !customers.length || !products.length || !items.length}
@@ -573,6 +607,29 @@ export default function CreateInvoice() {
           </p>
         </section>
       </form>
+      
+      {showPreview && (
+  <InvoicePreview
+    company={company}
+    customer={
+      customers.find((customer) => customerIdOf(customer) === customerId) ?? null
+    }
+    items={lines.map((item) => ({
+      name: item.product?.name || 'Product',
+      qty: item.qty,
+      price: item.price,
+      gstRate: item.gstRate,
+      taxableAmount: item.taxableAmount,
+      taxAmount: item.taxAmount,
+      total: item.total,
+    }))}
+    taxableTotal={taxableTotal}
+    taxTotal={taxTotal}
+    grandTotal={grandTotal}
+    notes={notes}
+    onClose={() => setShowPreview(false)}
+  />
+)}
     </main>
   );
 }
