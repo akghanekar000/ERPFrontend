@@ -1,4 +1,5 @@
 // src/routes.tsx
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -12,101 +13,61 @@ import InvoiceList from './modules/invoices/InvoiceList';
 import SalesReport from './modules/reports/SalesReport';
 import BusinessInfo from './modules/settings/BusinessInfo';
 import Home from './pages/Home';
-
-// pages (public / standalone pages)
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import DashboardLayout from './layouts/DashboardLayout';
 
-const Private: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Private: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const token = localStorage.getItem('auth_token');
-  if (!token) return <Navigate to="/login" replace />;
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 };
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public pages: no dashboard sidebar */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-      {/* Private (authenticated) routes */}
+      {/* All private pages share the dashboard layout */}
       <Route
-        path="/"
         element={
           <Private>
-            <Home />
+            <DashboardLayout />
           </Private>
         }
-      />
-      <Route
-        path="/customers"
-        element={
-          <Private>
-            <CustomerList />
-          </Private>
-        }
-      />
-      <Route
-        path="/customers/new"
-        element={
-          <Private>
-            <AddCustomer />
-          </Private>
-        }
-      />
-      <Route
-        path="/products"
-        element={
-          <Private>
-            <ProductList />
-          </Private>
-        }
-      />
-      <Route
-        path="/products/new"
-        element={
-          <Private>
-            <AddProduct />
-          </Private>
-        }
-      />
-      <Route
-        path="/invoices/new"
-        element={
-          <Private>
-            <CreateInvoice />
-          </Private>
-        }
-      />
-      <Route
-        path="/invoices"
-        element={
-          <Private>
-            <InvoiceList />
-          </Private>
-        }
-      />
-      <Route
-        path="/reports/sales"
-        element={
-          <Private>
-            <SalesReport />
-          </Private>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <Private>
-            <BusinessInfo />
-          </Private>
-        }
-      />
+      >
+        <Route index element={<Home />} />
 
-      {/* 404 fallback: redirect unknown routes to home (or change to a NotFound page) */}
+        <Route path="customers" element={<CustomerList />} />
+        <Route path="customers/new" element={<AddCustomer />} />
+
+        <Route path="products" element={<ProductList />} />
+        <Route path="products/new" element={<AddProduct />} />
+
+        <Route path="invoices" element={<InvoiceList />} />
+        <Route path="invoices/new" element={<CreateInvoice />} />
+
+        <Route path="reports/sales" element={<SalesReport />} />
+
+        <Route path="settings" element={<BusinessInfo />} />
+      </Route>
+
+      {/* Unknown URLs return to the dashboard */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
+
+    
+        
+       
+  
