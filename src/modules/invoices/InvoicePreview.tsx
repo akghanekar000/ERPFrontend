@@ -50,8 +50,11 @@ const money = (value: number) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
-const roundedFinalAmount = (value:number)=>
-  Math.round(Number(value ||0));
+const roundedFinalAmount = (value: number) =>
+  Math.round(Number(value || 0));
+
+const roundOffAmount = (value: number) =>
+  Number((roundedFinalAmount(value) - Number(value || 0)).toFixed(2));
 export default function InvoicePreview({
   isSaved,
   company,
@@ -265,6 +268,12 @@ export default function InvoicePreview({
             <div className="flex justify-between gap-4 py-1 text-sm">
               <span>Total GST</span>
               <span>{money(taxTotal)}</span>
+            </div>
+            <div className="flex justify-between gap-4 py-1 text-sm">
+              <span>Round Off</span>
+              <span> {roundOffAmount(grandTotal) >= 0 ? '+' : '−'}
+                     {money(Math.abs(roundOffAmount(grandTotal)))}
+              </span>
             </div>
             <div className="mt-3 flex justify-between gap-4 border-t border-slate-300 pt-3 text-lg font-extrabold">
               <span>Total payable</span>
