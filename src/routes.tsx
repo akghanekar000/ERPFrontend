@@ -36,7 +36,7 @@ export default function AppRoutes() {
         path="/"
         element={
           <Private>
-            <InvoiceList />
+            <Home />
           </Private>
         }
       />
