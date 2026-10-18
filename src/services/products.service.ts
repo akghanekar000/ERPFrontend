@@ -1,5 +1,5 @@
 // src/services/products.service.ts
-// src/services/products.service.ts
+
 import { API, handleResponse, getAuthHeaders } from './_fetch';
 
 export type Product = {
@@ -11,45 +11,77 @@ export type Product = {
   sku?: string;
   description?: string;
   stock?: number;
+};
+
+function normalizeProduct(product: any): Product {
+  return {
+    ...product,
+    id: product.id || product._id,
+    gstRate: Number(product.gstRate ?? 0),
+  };
 }
-  ;
 
 export async function listProducts(): Promise<Product[]> {
   const res = await fetch(`${API}/api/products`, {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
   });
-  return handleResponse(res);
+
+  const data = await handleResponse(res);
+  return Array.isArray(data) ? data.map(normalizeProduct) : [];
 }
 
 export async function getProduct(id: string): Promise<Product> {
   const res = await fetch(`${API}/api/products/${id}`, {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
   });
-  return handleResponse(res);
+
+  return normalizeProduct(await handleResponse(res));
 }
 
 export async function createProduct(payload: Partial<Product>) {
   const res = await fetch(`${API}/api/products`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify(payload),
   });
-  return handleResponse(res);
+
+  return normalizeProduct(await handleResponse(res));
 }
 
-export async function updateProduct(id: string, payload: Partial<Product>) {
+export async function updateProduct(
+  id: string,
+  payload: Partial<Product>,
+) {
   const res = await fetch(`${API}/api/products/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify(payload),
   });
-  return handleResponse(res);
+
+  return normalizeProduct(await handleResponse(res));
 }
 
 export async function deleteProduct(id: string) {
   const res = await fetch(`${API}/api/products/${id}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
   });
+
   return handleResponse(res);
 }
+
