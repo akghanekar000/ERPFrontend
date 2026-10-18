@@ -52,6 +52,7 @@ const money = (value: number) =>
   })}`;
 
 export default function InvoicePreview({
+  isSaved,
   company,
   customer,
   invoiceNumber,
