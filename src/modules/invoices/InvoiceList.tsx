@@ -159,7 +159,7 @@ export default function InvoiceList() {
       customer: customerName(invoice),
       subtotal: Number(invoice.subtotal ?? 0),
       tax: Number(invoice.tax ?? 0),
-      total: Number(invoice.total ?? 0),
+      total: Math.round(Number(invoice.total ?? 0)),
       status: invoice.status ?? 'UNPAID',
     }));
 
