@@ -50,7 +50,8 @@ const money = (value: number) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
-
+const roundedFinalAmount = (value:number)=>
+  Math.round(Number(value ||0));
 export default function InvoicePreview({
   isSaved,
   company,
