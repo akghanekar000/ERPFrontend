@@ -3,13 +3,16 @@
 import { API, handleResponse, getAuthHeaders } from './_fetch';
 
 export type Product = {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   price: number;
+  gstRate?: number;
   sku?: string;
   description?: string;
   stock?: number;
-};
+}
+  ;
 
 export async function listProducts(): Promise<Product[]> {
   const res = await fetch(`${API}/api/products`, {
