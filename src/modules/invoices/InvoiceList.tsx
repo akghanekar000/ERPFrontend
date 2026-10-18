@@ -265,7 +265,7 @@ export default function InvoiceList() {
       doc.text(`Tax: INR ${money(invoice.tax)}`, left, y);
       y += 7;
       doc.setFont('helvetica', 'bold');
-      doc.text(`Total: INR ${finalmoney(invoice.total)}`, left, y);
+      doc.text(`Total: INR ${finalMoney(invoice.total)}`, left, y);
       y += 8;
       doc.setFont('helvetica', 'normal');
       doc.text(`Status: ${invoice.status ?? 'UNPAID'}`, left, y);
@@ -510,7 +510,7 @@ export default function InvoiceList() {
                       <div>
                         <p className="text-xs text-gray-500">Total</p>
                         <p className="mt-1 font-bold text-gray-900">
-                          ₹{finalmoney(invoice.total)}
+                          ₹{finalMoney(invoice.total)}
                         </p>
                       </div>
                     </div>
@@ -574,7 +574,7 @@ export default function InvoiceList() {
                           {customerName(invoice)}
                         </td>
                         <td className="px-5 py-4 text-right font-semibold text-gray-900">
-                          ₹{finalmoney(invoice.total)}
+                          ₹{finalMoney(invoice.total)}
                         </td>
                         <td className="px-5 py-4">
                           <span
