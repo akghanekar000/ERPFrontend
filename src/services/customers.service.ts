@@ -2,14 +2,20 @@
 // src/services/customers.service.ts
 import { API, handleResponse, getAuthHeaders } from './_fetch';
 
+
 export type Customer = {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   phone?: string;
   email?: string;
   gst?: string;
+  gstin?: string;
   address?: string;
+  state?: string;
+  stateCode?: string;
 };
+
 
 export async function listCustomers(): Promise<Customer[]> {
   const res = await fetch(`${API}/api/customers`, {
