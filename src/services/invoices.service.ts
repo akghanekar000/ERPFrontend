@@ -17,15 +17,17 @@ export type Invoice = {
   // src/services/invoices.service.ts
   import { API, handleResponse, getAuthHeaders } from './_fetch';
   
-  export type InvoiceItem = { productId: string; qty: number; price: number };
+  export type InvoiceItem = {
+   product: string;
+   qty: number;
+   price: number;
+  };
+
   export type InvoicePayload = {
-    invoiceNumber?: string;
-    customerId: string;
-    items: InvoiceItem[];
-    subtotal: number;
-    tax?: number;
-    total: number;
-    notes?: string;
+   customer: string;
+   items: InvoiceItem[];
+   tax?: number;
+   notes?: string;
   };
   
   export async function listInvoices() {
