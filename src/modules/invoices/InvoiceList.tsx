@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import Papa from 'papaparse';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import InvoicePreview from './InvoicePreview';
 
 import { useAuth } from '../../components/AuthContext';
 import {
@@ -15,6 +16,39 @@ import { addAuditLogEntry } from '../../services/auditlog.service';
 import { formatDate } from '../../utils/formatDate';
 
 type InvoiceRow = {
+    taxableAmount?: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  notes?: string;
+  sellerSnapshot?: {
+    companyName?: string;
+    gstin?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    state?: string;
+    pinCode?: string;
+  };
+  customerSnapshot?: {
+    name?: string;
+    gst?: string;
+    gstin?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    state?: string;
+  };
+  items?: Array<{
+    qty?: number;
+    price?: number;
+    gstRate?: number;
+    taxableAmount?: number;
+    taxAmount?: number;
+    lineTotal?: number;
+    product?: string | { name?: string };
+    name?: string;
+  }>;
   id?: string;
   _id?: string;
   invoiceNumber?: string;
@@ -25,12 +59,7 @@ type InvoiceRow = {
   tax?: number;
   total?: number;
   status?: string;
-  items?: Array<{
-    qty?: number;
-    price?: number;
-    product?: string | { name?: string };
-    name?: string;
-  }>;
+  
 };
 
 function invoiceId(invoice: InvoiceRow) {
@@ -63,7 +92,9 @@ export default function InvoiceList() {
   const [refresh, setRefresh] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
-
+  const [selectedInvoice, setSelectedInvoice] =
+  useState<InvoiceRow | null>(null);
+ 
   const canManage = user?.role === 'admin' || user?.role === 'manager';
 
   useEffect(() => {
@@ -178,7 +209,10 @@ export default function InvoiceList() {
     reader.readAsDataURL(file);
     event.target.value = '';
   }
-
+ function previewSavedInvoice(invoice: InvoiceRow) {
+  setSelectedInvoice(invoice);
+ }
+  
   function downloadInvoicePDF(invoice: InvoiceRow) {
     try {
       const doc = new jsPDF();
@@ -477,6 +511,13 @@ export default function InvoiceList() {
                     <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3">
                       <button
                         type="button"
+                        onClick={() => previewSavedInvoice(invoice)}
+                        className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => downloadInvoicePDF(invoice)}
                         className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"
                       >
@@ -537,6 +578,13 @@ export default function InvoiceList() {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
+                           <button
+                             type="button"
+                             onClick={() => previewSavedInvoice(invoice)}
+                             className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                           >
+                             Preview
+                           </button>
                             <button
                               type="button"
                               onClick={() => downloadInvoicePDF(invoice)}
@@ -565,6 +613,43 @@ export default function InvoiceList() {
           </>
         )}
       </section>
+      {selectedInvoice && (
+       <InvoicePreview
+         company={selectedInvoice.sellerSnapshot ?? null}
+        customer={
+         selectedInvoice.customerSnapshot ??
+         (typeof selectedInvoice.customer === 'object' &&
+         selectedInvoice.customer !== null
+           ? selectedInvoice.customer
+           : { name: customerName(selectedInvoice) })
+       }
+       invoiceNumber={invoiceNumber(selectedInvoice)}
+       date={selectedInvoice.date}
+       items={(selectedInvoice.items ?? []).map((item) => ({
+        name:
+         item.name ??
+         (typeof item.product === 'object'
+          ? item.product?.name
+          : item.product) ??
+         'Product',
+        qty: Number(item.qty ?? 0),
+        price: Number(item.price ?? 0),
+        gstRate: Number(item.gstRate ?? 0),
+        taxableAmount: Number(item.taxableAmount ?? 0),
+        taxAmount: Number(item.taxAmount ?? 0),
+        total: Number(item.lineTotal ?? item.taxableAmount ?? 0) +
+        Number(item.taxAmount ?? 0),
+     }))}
+      taxableTotal={Number(
+       selectedInvoice.taxableAmount ?? selectedInvoice.subtotal ?? 0
+      )}
+      taxTotal={Number(selectedInvoice.tax ?? 0)}
+      grandTotal={Number(selectedInvoice.total ?? 0)}
+      notes={selectedInvoice.notes}
+      isSaved
+      onClose={() => setSelectedInvoice(null)}
+     />
+    )}
     </div>
   );
 }
