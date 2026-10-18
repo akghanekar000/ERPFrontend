@@ -67,7 +67,7 @@ export default function InvoicePreview({
   const displayDate = date
     ? new Date(date).toLocaleDateString('en-IN')
     : new Date().toLocaleDateString('en-IN');
-
+  const grandTotal = Math.round(Number(grandTotal || 0));
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 p-3 sm:p-6">
       <div className="mx-auto max-w-5xl">
