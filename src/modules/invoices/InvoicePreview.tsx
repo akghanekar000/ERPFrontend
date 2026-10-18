@@ -32,6 +32,7 @@ export type PreviewItem = {
 };
 
 type InvoicePreviewProps = {
+  isSaved?: boolean;
   company: PreviewCompany | null;
   customer: PreviewCustomer | null;
   invoiceNumber?: string;
@@ -72,7 +73,7 @@ export default function InvoicePreview({
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-white">
-              Invoice preview
+             {isSaved ? 'Saved invoice preview' : 'Draft invoice preview'}
             </h2>
             <p className="mt-1 text-sm text-slate-200">
               Review the invoice before saving.
@@ -128,7 +129,7 @@ export default function InvoicePreview({
               <p className="mt-2 text-sm text-slate-500">Invoice date</p>
               <p className="font-semibold">{displayDate}</p>
               <p className="mt-3 inline-block rounded-md border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
-                DRAFT PREVIEW
+                {isSaved ? 'SAVED INVOICE' : 'DRAFT PREVIEW'}
               </p>
             </div>
           </header>
@@ -295,8 +296,9 @@ export default function InvoicePreview({
         </article>
 
         <p className="mx-auto mt-4 max-w-5xl text-xs text-slate-200">
-          This is a draft preview. The final invoice number and server-calculated
-          GST totals must be checked against the saved invoice.
+          {isSaved
+            ? 'Review of the saved invoice. The displayed details come from the invoice data available to the application.'
+            : 'This is a draft preview. The final invoice number and server-calculated GST totals must be checked against the saved invoice.'}
         </p>
       </div>
 
