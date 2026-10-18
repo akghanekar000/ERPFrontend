@@ -5,15 +5,42 @@ import { v4 as uuid } from 'uuid';
 import { listCustomers } from '../../services/customers.service';
 import { listProducts } from '../../services/products.service';
 import { createInvoice } from '../../services/invoices.service';
-import { calculateGST } from '../../utils/calculateGST';
 import type { Product } from '../../services/products.service';
 import type { Customer } from '../../services/customers.service';
+
+type PriceMode = 'inclusive' | 'exclusive';
 
 type InvoiceLine = {
   id: string;
   productId: string;
   qty: number;
+  gstRate: number;
+  priceMode: PriceMode;
 };
+
+type CalculatedLine = InvoiceLine & {
+  product?: Product;
+  price: number;
+  enteredAmount: number;
+  taxableAmount: number;
+  taxAmount: number;
+  total: number;
+};
+
+const money = (amount: number) =>
+  `₹${amount.toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+const roundMoney = (amount: number) =>
+  Math.round((amount + Number.EPSILON) * 100) / 100;
+
+const productIdOf = (product: Product) =>
+  product.id || product._id || '';
+
+const customerIdOf = (customer: Customer) =>
+  customer.id || customer._id || '';
 
 export default function CreateInvoice() {
   const navigate = useNavigate();
@@ -21,7 +48,6 @@ export default function CreateInvoice() {
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerId, setCustomerId] = useState('');
-  const [gstRate, setGstRate] = useState('18');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<InvoiceLine[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +68,7 @@ export default function CreateInvoice() {
           setError(
             err instanceof Error
               ? err.message
-              : 'Could not load customers and products.'
+              : 'Could not load customers and products.',
           );
         }
       })
@@ -55,24 +81,52 @@ export default function CreateInvoice() {
     };
   }, []);
 
-  const lines = useMemo(
-    () =>
-      items.map((item) => {
-        const product = products.find((p) => p.id === item.productId);
-        const price = Number(product?.price ?? 0);
-        return {
-          ...item,
-          product,
-          price,
-          amount: price * item.qty,
-        };
-      }),
-    [items, products]
+  const lines = useMemo<CalculatedLine[]>(() => {
+    return items.map((item) => {
+      const product = products.find(
+        (candidate) => productIdOf(candidate) === item.productId,
+      );
+
+      const price = Number(product?.price ?? 0);
+      const enteredAmount = roundMoney(price * item.qty);
+
+      const taxableAmount = roundMoney(
+        item.priceMode === 'inclusive'
+          ? enteredAmount / (1 + item.gstRate / 100)
+          : enteredAmount,
+      );
+
+      const taxAmount = roundMoney(
+        item.priceMode === 'inclusive'
+          ? enteredAmount - taxableAmount
+          : taxableAmount * item.gstRate / 100,
+      );
+
+      return {
+        ...item,
+        product,
+        price,
+        enteredAmount,
+        taxableAmount,
+        taxAmount,
+        total: roundMoney(taxableAmount + taxAmount),
+      };
+    });
+  }, [items, products]);
+
+  const taxableTotal = roundMoney(
+    lines.reduce((sum, item) => sum + item.taxableAmount, 0),
   );
 
-  const subtotal = lines.reduce((sum, item) => sum + item.amount, 0);
-  const tax = Number(calculateGST(subtotal, Number(gstRate) || 0).toFixed(2));
-  const total = subtotal + tax;
+  const taxTotal = roundMoney(
+    lines.reduce((sum, item) => sum + item.taxAmount, 0),
+  );
+
+  const grandTotal = roundMoney(taxableTotal + taxTotal);
+
+  const enteredTotal = roundMoney(
+    lines.reduce((sum, item) => sum + item.enteredAmount, 0),
+  );
 
   const addItem = () => {
     if (!products.length) {
@@ -81,36 +135,50 @@ export default function CreateInvoice() {
     }
 
     setError('');
+
+    const firstProduct = products[0];
+
     setItems((current) => [
       ...current,
       {
         id: uuid(),
-        productId: products[0].id,
+        productId: productIdOf(firstProduct),
         qty: 1,
+        gstRate: Number(firstProduct.gstRate ?? 0),
+        priceMode: 'exclusive',
       },
     ]);
   };
 
-  const updateProduct = (id: string, productId: string) => {
+  const updateItem = (
+    id: string,
+    changes: Partial<InvoiceLine>,
+  ) => {
     setItems((current) =>
       current.map((item) =>
-        item.id === id ? { ...item, productId } : item
-      )
+        item.id === id ? { ...item, ...changes } : item,
+      ),
     );
   };
 
-  const updateQty = (id: string, value: string) => {
-    const qty = Math.max(1, Math.floor(Number(value) || 1));
-    setItems((current) =>
-      current.map((item) => (item.id === id ? { ...item, qty } : item))
+  const updateProduct = (id: string, nextProductId: string) => {
+    const product = products.find(
+      (candidate) => productIdOf(candidate) === nextProductId,
     );
+
+    updateItem(id, {
+      productId: nextProductId,
+      gstRate: Number(product?.gstRate ?? 0),
+    });
   };
 
   const removeItem = (id: string) => {
     setItems((current) => current.filter((item) => item.id !== id));
   };
 
-  const saveInvoice = async (event: React.FormEvent<HTMLFormElement>) => {
+  const saveInvoice = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
     setError('');
 
@@ -124,8 +192,19 @@ export default function CreateInvoice() {
       return;
     }
 
-    if (!Number.isFinite(Number(gstRate)) || Number(gstRate) < 0) {
-      setError('Enter a valid GST percentage.');
+    if (
+      lines.some(
+        (item) =>
+          !Number.isFinite(item.qty) ||
+          item.qty <= 0 ||
+          !Number.isFinite(item.price) ||
+          item.price < 0 ||
+          !Number.isFinite(item.gstRate) ||
+          item.gstRate < 0 ||
+          item.gstRate > 100,
+      )
+    ) {
+      setError('Check the quantity, price and GST rate for each item.');
       return;
     }
 
@@ -138,15 +217,18 @@ export default function CreateInvoice() {
           product: item.productId,
           qty: item.qty,
           price: item.price,
+          priceMode: item.priceMode,
+          gstRate: item.gstRate,
         })),
-        tax,
-        notes: notes.trim() || undefined,
+        notes: notes.trim(),
       });
 
       navigate('/invoices');
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : 'Could not save the invoice.'
+        err instanceof Error
+          ? err.message
+          : 'Could not save the invoice.',
       );
     } finally {
       setSaving(false);
@@ -155,36 +237,37 @@ export default function CreateInvoice() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
+      <main className="mx-auto max-w-5xl p-4 sm:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">
           Loading your customers and products…
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-4 pb-10 sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             A K TRADERS
           </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
             Create invoice
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Select a customer, add products and review the total before saving.
+            Choose the customer, add products and review the GST calculation.
           </p>
         </div>
+
         <button
           type="button"
           onClick={() => navigate('/invoices')}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
         >
           Back to invoices
         </button>
-      </div>
+      </header>
 
       {error && (
         <div
@@ -198,63 +281,45 @@ export default function CreateInvoice() {
       <form onSubmit={saveInvoice} className="space-y-6">
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           <h2 className="text-lg font-bold text-slate-900">
-            Customer and tax details
+            Customer details
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Customer details are loaded from your backend.
+
+          <label
+            htmlFor="customer"
+            className="mt-4 block text-sm font-semibold text-slate-700"
+          >
+            Select customer *
+          </label>
+
+          <select
+            id="customer"
+            required
+            value={customerId}
+            onChange={(event) => setCustomerId(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm"
+          >
+            <option value="">Choose a customer</option>
+            {customers.map((customer) => (
+              <option
+                key={customerIdOf(customer)}
+                value={customerIdOf(customer)}
+              >
+                {customer.name}
+                {customer.state ? ` — ${customer.state}` : ''}
+              </option>
+            ))}
+          </select>
+
+          {!customers.length && (
+            <p className="mt-2 text-sm text-amber-700">
+              No customers found. Add a customer before creating an invoice.
+            </p>
+          )}
+
+          <p className="mt-3 text-xs text-slate-500">
+            The backend determines whether to use CGST + SGST or IGST from
+            your company and customer state details. Make sure both are correct.
           </p>
-
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="customer"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Customer <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="customer"
-                required
-                value={customerId}
-                onChange={(event) => setCustomerId(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="">Select a customer</option>
-                {customers.map((customer) => (
-                  <option
-                    key={customer.id ?? customer._id}
-                    value={customer.id ?? customer._id}
-                  >
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
-              {!customers.length && (
-                <p className="mt-2 text-sm text-amber-700">
-                  No customers found. Add a customer before creating an invoice.
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="gstRate"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                GST rate (%)
-              </label>
-              <input
-                id="gstRate"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={gstRate}
-                onChange={(event) => setGstRate(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-          </div>
         </section>
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -264,168 +329,187 @@ export default function CreateInvoice() {
                 Invoice items
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                {items.length} {items.length === 1 ? 'item' : 'items'} added
+                {items.length} {items.length === 1 ? 'item' : 'items'}
               </p>
             </div>
+
             <button
               type="button"
               onClick={addItem}
               disabled={!products.length}
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
             >
               + Add product
             </button>
           </div>
 
           {!items.length ? (
-            <div className="p-8 text-center sm:p-12">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-xl text-blue-600">
-                +
-              </div>
-              <h3 className="mt-4 font-semibold text-slate-900">
-                No products added yet
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Add a product to start calculating this invoice.
+            <div className="p-8 text-center">
+              <p className="font-semibold text-slate-900">
+                No products added
+              </p>
+              <p className="mt-2 text-sm text-slate-500">
+                Tap “Add product” to begin.
               </p>
             </div>
           ) : (
-            <>
-              <div className="hidden overflow-x-auto md:block">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                    <tr>
-                      <th className="px-6 py-4">Product</th>
-                      <th className="px-4 py-4">Price</th>
-                      <th className="px-4 py-4">Quantity</th>
-                      <th className="px-4 py-4">Amount</th>
-                      <th className="px-4 py-4">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {lines.map((item) => (
-                      <tr key={item.id}>
-                        <td className="min-w-56 px-6 py-4">
-                          <select
-                            aria-label="Select product"
-                            value={item.productId}
-                            onChange={(event) =>
-                              updateProduct(item.id, event.target.value)
-                            }
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
-                          >
-                            {products.map((product) => (
-                              <option
-                                key={product.id ?? product._id}
-                                value={product.id ?? product._id}
-                              >
-                                {product.name}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="px-4 py-4 text-slate-700">
-                          ₹{item.price.toFixed(2)}
-                        </td>
-                        <td className="w-32 px-4 py-4">
-                          <input
-                            aria-label="Quantity"
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={item.qty}
-                            onChange={(event) =>
-                              updateQty(item.id, event.target.value)
-                            }
-                            className="w-24 rounded-lg border border-slate-300 px-3 py-2"
-                          />
-                        </td>
-                        <td className="px-4 py-4 font-semibold text-slate-900">
-                          ₹{item.amount.toFixed(2)}
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item.id)}
-                            className="rounded-lg px-3 py-2 font-semibold text-red-600 hover:bg-red-50"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="space-y-4 p-4 sm:p-6">
+              {lines.map((item, index) => (
+                <article
+                  key={item.id}
+                  className="space-y-4 rounded-xl border border-slate-200 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-semibold text-slate-900">
+                      Item {index + 1}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="rounded-lg px-3 py-2 text-sm font-semibold text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
 
-              <div className="space-y-4 p-4 md:hidden">
-                {lines.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="space-y-3 rounded-xl border border-slate-200 p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-slate-500">
-                        Item {index + 1}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.id)}
-                        className="text-sm font-semibold text-red-600"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    <label className="block text-sm font-medium text-slate-700">
+                  <div>
+                    <label
+                      htmlFor={`product-${item.id}`}
+                      className="block text-sm font-semibold text-slate-700"
+                    >
                       Product
-                      <select
-                        value={item.productId}
-                        onChange={(event) =>
-                          updateProduct(item.id, event.target.value)
-                        }
-                        className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3 py-3"
-                      >
-                        {products.map((product) => (
-                          <option
-                            key={product.id ?? product._id}
-                            value={product.id ?? product._id}
-                          >
-                            {product.name}
-                          </option>
-                        ))}
-                      </select>
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-sm text-slate-500">Unit price</p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          ₹{item.price.toFixed(2)}
-                        </p>
-                      </div>
-                      <label className="text-sm font-medium text-slate-700">
+                    <select
+                      id={`product-${item.id}`}
+                      value={item.productId}
+                      onChange={(event) =>
+                        updateProduct(item.id, event.target.value)
+                      }
+                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm"
+                    >
+                      {products.map((product) => (
+                        <option
+                          key={productIdOf(product)}
+                          value={productIdOf(product)}
+                        >
+                          {product.name} — {money(Number(product.price))}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor={`qty-${item.id}`}
+                        className="block text-sm font-semibold text-slate-700"
+                      >
                         Quantity
-                        <input
-                          type="number"
-                          min="1"
-                          step="1"
-                          value={item.qty}
-                          onChange={(event) =>
-                            updateQty(item.id, event.target.value)
-                          }
-                          className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-3"
-                        />
                       </label>
+                      <input
+                        id={`qty-${item.id}`}
+                        type="number"
+                        min="0.001"
+                        step="0.001"
+                        required
+                        value={item.qty}
+                        onChange={(event) =>
+                          updateItem(item.id, {
+                            qty: Math.max(0.001, Number(event.target.value) || 0.001),
+                          })
+                        }
+                        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+                      />
                     </div>
-                    <div className="flex justify-between border-t border-slate-100 pt-3">
-                      <span className="text-sm text-slate-500">Amount</span>
-                      <strong className="text-slate-900">
-                        ₹{item.amount.toFixed(2)}
-                      </strong>
+
+                    <div>
+                      <label
+                        htmlFor={`gst-${item.id}`}
+                        className="block text-sm font-semibold text-slate-700"
+                      >
+                        GST rate (%)
+                      </label>
+                      <input
+                        id={`gst-${item.id}`}
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        required
+                        value={item.gstRate}
+                        onChange={(event) =>
+                          updateItem(item.id, {
+                            gstRate: Number(event.target.value),
+                          })
+                        }
+                        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            </>
+
+                  <div>
+                    <label
+                      htmlFor={`price-mode-${item.id}`}
+                      className="block text-sm font-semibold text-slate-700"
+                    >
+                      Product price type
+                    </label>
+                    <select
+                      id={`price-mode-${item.id}`}
+                      value={item.priceMode}
+                      onChange={(event) =>
+                        updateItem(item.id, {
+                          priceMode: event.target.value as PriceMode,
+                        })
+                      }
+                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm"
+                    >
+                      <option value="exclusive">
+                        GST-exclusive — add GST to the price
+                      </option>
+                      <option value="inclusive">
+                        GST-inclusive — GST is already in the price
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2 border-t border-slate-100 pt-4 text-sm">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Unit price</span>
+                      <span className="font-medium text-slate-900">
+                        {money(item.price)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Entered amount</span>
+                      <span className="text-slate-900">
+                        {money(item.enteredAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Taxable amount</span>
+                      <span className="text-slate-900">
+                        {money(item.taxableAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">
+                        GST ({item.gstRate}%)
+                      </span>
+                      <span className="text-slate-900">
+                        {money(item.taxAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3 border-t border-slate-100 pt-3 font-bold">
+                      <span className="text-slate-900">Item total</span>
+                      <span className="text-slate-900">
+                        {money(item.total)}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
         </section>
 
@@ -434,47 +518,58 @@ export default function CreateInvoice() {
             htmlFor="notes"
             className="block text-sm font-semibold text-slate-700"
           >
-            Notes (optional)
+            Notes and payment terms (optional)
           </label>
           <textarea
             id="notes"
             rows={3}
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
-            placeholder="Payment terms, delivery details or other notes"
-            className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            placeholder="Enter payment terms, delivery details or other notes"
+            className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3 text-sm"
           />
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-lg font-bold text-slate-900">Invoice summary</h2>
+          <h2 className="text-lg font-bold text-slate-900">
+            Invoice summary
+          </h2>
+
           <div className="mt-4 space-y-3">
-            <div className="flex justify-between gap-4 text-sm text-slate-600">
-              <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
+            <div className="flex justify-between gap-4 text-sm">
+              <span className="text-slate-600">Entered item amounts</span>
+              <span className="text-slate-900">{money(enteredTotal)}</span>
             </div>
-            <div className="flex justify-between gap-4 text-sm text-slate-600">
-              <span>GST ({gstRate || 0}%)</span>
-              <span>₹{tax.toFixed(2)}</span>
+
+            <div className="flex justify-between gap-4 text-sm">
+              <span className="text-slate-600">Total taxable amount</span>
+              <span className="text-slate-900">{money(taxableTotal)}</span>
             </div>
+
+            <div className="flex justify-between gap-4 text-sm">
+              <span className="text-slate-600">Total GST</span>
+              <span className="text-slate-900">{money(taxTotal)}</span>
+            </div>
+
             <div className="flex justify-between gap-4 border-t border-slate-200 pt-4">
               <span className="font-bold text-slate-900">Total payable</span>
               <span className="text-xl font-bold text-blue-700">
-                ₹{total.toFixed(2)}
+                {money(grandTotal)}
               </span>
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={saving || !customers.length || !products.length}
-            className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            disabled={saving || !customers.length || !products.length || !items.length}
+            className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {saving ? 'Saving invoice…' : 'Save invoice'}
           </button>
+
           <p className="mt-3 text-xs text-slate-500">
-            The server records the invoice date. This form sends customer,
-            product, quantity, price and GST data to your existing backend.
+            The backend recalculates GST and stores the invoice. Check your
+            company and customer state details before saving.
           </p>
         </section>
       </form>
@@ -482,6 +577,5 @@ export default function CreateInvoice() {
   );
 }
 
-      
-
- 
+    
+    
