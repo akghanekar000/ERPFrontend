@@ -1,12 +1,20 @@
-// src/components/AuthContext.tsx (Clerk adapter)
-import React, { createContext, useContext, ReactNode } from "react";
-import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
+
+
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 type User = {
   id?: string;
   email?: string;
   name?: string;
-  [k: string]: any;
+  role?: string;
+  [key: string]: unknown;
 };
 
 type AuthContextType = {
@@ -17,42 +25,91 @@ type AuthContextType = {
   refresh: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { isSignedIn, user, isLoaded } = useUser();
-  const { signOut } = useClerkAuth();
+function readUserFromToken(): User | null {
+  try {
+    const token = localStorage.getItem("auth_token");
 
-  const convertedUser: User | null = user
-    ? {
-        id: user.id,
-        email: user.primaryEmailAddress?.emailAddress,
-        name: user.fullName ?? undefined,
-        // ...user, // Do not spread user to avoid duplicate id
-      }
-    : null;
+    if (!token) return null;
 
-  const login = async () => {
-    throw new Error("Use Clerk SignIn component instead of login()");
-  };
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
 
-  const refresh = async () => {
-    return;
+    const payload = parts[1]
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    const decoded = JSON.parse(
+      decodeURIComponent(
+        Array.from(atob(payload), (char) =>
+          "%" + char.charCodeAt(0).toString(16).padStart(2, "0")
+        ).join("")
+      )
+    );
+
+    return {
+      id: decoded.sub ?? decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export const AuthProvider: React.FC<{
+  children: ReactNode;
+}> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [ready, setReady] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setUser(readUserFromToken());
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const login = async (
+    _email: string,
+    _password: string
+  ): Promise<void> => {
+    throw new Error(
+      "Backend login will be connected in Problem 2."
+    );
   };
 
   const logout = () => {
-    signOut();
+    localStorage.removeItem("auth_token");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user: convertedUser, ready: isLoaded, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{ user, ready, login, logout, refresh }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = (): AuthContextType => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error(
+      "useAuth must be used within AuthProvider"
+    );
+  }
+
+  return context;
 };
+
+
+  
