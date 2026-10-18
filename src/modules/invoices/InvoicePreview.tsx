@@ -192,7 +192,7 @@ export default function InvoicePreview({
                   Total payable
                 </p>
                 <p className="mt-1 text-2xl font-extrabold text-blue-800">
-                  {money(grandTotal)}
+                  {money(roundedFinalAmount(grandTotal))}
                 </p>
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function InvoicePreview({
             </div>
             <div className="mt-3 flex justify-between gap-4 border-t border-slate-300 pt-3 text-lg font-extrabold">
               <span>Total payable</span>
-              <span>{money(grandTotal)}</span>
+              <span>{money(roundedFinalAmount(grandTotal))}</span>
             </div>
           </section>
 
