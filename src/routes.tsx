@@ -11,6 +11,7 @@ import CreateInvoice from './modules/invoices/CreateInvoice';
 import InvoiceList from './modules/invoices/InvoiceList';
 import SalesReport from './modules/reports/SalesReport';
 import BusinessInfo from './modules/settings/BusinessInfo';
+import Home from './pages/Home';
 
 // pages (public / standalone pages)
 import RegisterPage from './pages/RegisterPage';
