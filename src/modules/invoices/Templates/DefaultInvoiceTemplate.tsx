@@ -268,7 +268,8 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
             <span>Total Payable</span>
             <span>{money(roundedTotal)}</span>
          </div>
-
+        </div>
+      </div>
       <div className="mb-2 grid grid-cols-2 gap-2">
         <div className="border border-black p-2">
           <p className="mb-1 font-bold uppercase">Bank Details</p>
