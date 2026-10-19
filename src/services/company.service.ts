@@ -10,6 +10,12 @@ export type Company = {
   address: string;
   state: string;
   pinCode: string;
+
+  bankName: string;
+  accountHolder: string;
+  accountNumber: string;
+  ifscCode: string;
+  branch: string;
 };
 
 export type CompanyPayload = {
@@ -20,6 +26,12 @@ export type CompanyPayload = {
   address: string;
   state: string;
   pinCode: string;
+
+  bankName: string;
+  accountHolder: string;
+  accountNumber: string;
+  ifscCode: string;
+  branch: string;
 };
 
 export async function getCompany(): Promise<Company | null> {
