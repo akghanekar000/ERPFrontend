@@ -145,66 +145,54 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
           )}
         </div>
 
-      
-<div className="border border-black p-3">
-  <h3 className="mb-2 text-sm font-bold uppercase">
-    Bank Details
-  </h3>
+        <div className="border border-black p-3">
+          <h3 className="mb-2 text-sm font-bold uppercase">
+            Bank Details
+          </h3>
 
-  {company?.bankName ||
-  company?.accountHolder ||
-  company?.accountNumber ||
-  company?.ifscCode ||
-  company?.branch ? (
-    <div className="space-y-2 text-sm">
-      {company?.bankName && (
-        <div>
-          <strong>Bank:</strong> {company.bankName}
-        </div>
-      )}
+          {company?.bankName ||
+          company?.accountHolder ||
+          company?.accountNumber ||
+          company?.ifscCode ||
+          company?.branch ? (
+            <div className="space-y-2 text-sm">
+              {company?.bankName && (
+                <div>
+                  <strong>Bank:</strong> {company.bankName}
+                </div>
+              )}
 
-      {company?.accountHolder && (
-        <div>
-          <strong>Account Holder:</strong> {company.accountHolder}
-        </div>
-      )}
+              {company?.accountHolder && (
+                <div>
+                  <strong>Account Holder:</strong>{' '}
+                  {company.accountHolder}
+                </div>
+              )}
 
-      {company?.accountNumber && (
-        <div className="break-all">
-          <strong>Account No.:</strong> {company.accountNumber}
-        </div>
-      )}
+              {company?.accountNumber && (
+                <div className="break-all">
+                  <strong>Account No.:</strong>{' '}
+                  {company.accountNumber}
+                </div>
+              )}
 
-      {company?.ifscCode && (
-        <div>
-          <strong>IFSC:</strong> {company.ifscCode}
-        </div>
-      )}
+              {company?.ifscCode && (
+                <div>
+                  <strong>IFSC:</strong> {company.ifscCode}
+                </div>
+              )}
 
-      {company?.branch && (
-        <div>
-          <strong>Branch:</strong> {company.branch}
-        </div>
-      )}
-    </div>
-  ) : (
-    <p className="text-sm text-slate-600">
-      Add your bank details in Company Settings.
-    </p>
-  )}
-<
-  /div>
-          
-
-          <div className="mt-2 flex justify-between gap-2 text-sm">
-            <span>Taxable value</span>
-            <span>{money(data.taxableTotal)}</span>
-          </div>
-
-          <div className="mt-2 flex justify-between gap-2 text-sm">
-            <span>Total GST</span>
-            <span>{money(data.taxTotal)}</span>
-          </div>
+              {company?.branch && (
+                <div>
+                  <strong>Branch:</strong> {company.branch}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600">
+              Add your bank details in Company Settings.
+            </p>
+          )}
         </div>
       </section>
 
@@ -296,9 +284,11 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
                 <th className="border border-black p-2 text-left">
                   GST Rate
                 </th>
+
                 <th className="border border-black p-2 text-right">
                   Taxable
                 </th>
+
                 <th className="border border-black p-2 text-right">
                   GST Amount
                 </th>
@@ -311,9 +301,11 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
                   <td className="border border-black p-2">
                     {entry.rate}%
                   </td>
+
                   <td className="border border-black p-2 text-right">
                     {money(entry.taxable)}
                   </td>
+
                   <td className="border border-black p-2 text-right">
                     {money(entry.tax)}
                   </td>
@@ -350,7 +342,10 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
       </section>
 
       <section className="mt-5 border-t border-black pt-3 text-sm">
-        <h3 className="font-bold uppercase">Declaration / Terms</h3>
+        <h3 className="font-bold uppercase">
+          Declaration / Terms
+        </h3>
+
         <p className="mt-2 whitespace-pre-line">
           {data.notes?.trim() || 'No additional terms provided.'}
         </p>
@@ -358,7 +353,10 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
 
       <footer className="mt-10 grid grid-cols-1 gap-8 text-sm sm:grid-cols-2">
         <div>
-          <p className="font-bold">For {company?.companyName || 'Seller'}</p>
+          <p className="font-bold">
+            For {company?.companyName || 'Seller'}
+          </p>
+
           <p className="mt-12 border-t border-black pt-2">
             Authorised Signatory
           </p>
@@ -366,7 +364,9 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
 
         <div className="sm:text-right">
           <p>Computer-generated invoice</p>
-          <p className="mt-1">Please verify all invoice details.</p>
+          <p className="mt-1">
+            Please verify all invoice details.
+          </p>
         </div>
       </footer>
     </div>
