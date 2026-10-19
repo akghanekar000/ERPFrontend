@@ -57,6 +57,17 @@ export default function CreateInvoice() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [company, setCompany] = useState<Company | null>(null);
   const [customerId, setCustomerId] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+
+  const [invoiceDate, setInvoiceDate] = useState(() => {
+    const now = new Date();
+
+    return [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+  });
   const [showPreview, setShowPreview] = useState(false);
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<InvoiceLine[]>([]);
