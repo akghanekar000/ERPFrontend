@@ -664,6 +664,8 @@ export default function CreateInvoice() {
     customer={
       customers.find((customer) => customerIdOf(customer) === customerId) ?? null
     }
+    invoiceNumber={invoiceNumber.trim() || undefined}
+    date={invoiceDate}
     items={lines.map((item) => ({
       name: item.product?.name || 'Product',
       qty: item.qty,
