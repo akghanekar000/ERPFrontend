@@ -640,7 +640,13 @@ export default function InvoiceList() {
       </section>
       {selectedInvoice && (
        <InvoicePreview
-         company={selectedInvoice.sellerSnapshot ?? null}
+         company={{(selectedInvoice.sellerSnapshot ?? {}),
+          bankName: currentCompany?.bankName ?? '',
+          accountHolder: currentCompany?.accountHolder ?? '',
+          accountNumber: currentCompany?.accountNumber ?? '',
+          ifscCode: currentCompany?.ifscCode ?? '',
+          branch: currentCompany?.branch ?? '',
+        }}
         customer={
          selectedInvoice.customerSnapshot ??
          (typeof selectedInvoice.customer === 'object' &&
