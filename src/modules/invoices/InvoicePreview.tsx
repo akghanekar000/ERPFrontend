@@ -13,6 +13,12 @@ export type PreviewCompany = {
   address?: string;
   state?: string;
   pinCode?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  branch?: string;
+  
 };
 
 export type PreviewCustomer = {
