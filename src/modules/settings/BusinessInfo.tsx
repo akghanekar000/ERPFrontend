@@ -16,6 +16,11 @@ const emptyCompany: CompanyPayload = {
   address: "",
   state: "",
   pinCode: "",
+  bankName: "",
+  accountHolder: "",
+  accountNumber: "",
+  ifscCode: "",
+  branch: "",
 };
 
 export default function BusinessInfo() {
@@ -41,6 +46,11 @@ export default function BusinessInfo() {
             address: company.address || "",
             state: company.state || "",
             pinCode: company.pinCode || "",
+            bankName: company.bankName || "",
+            accountHolder: company.accountHolder || "",
+            accountNumber: company.accountNumber || "",
+            ifscCode: company.ifscCode || "",
+            branch: company.branch || "",
           });
         }
       } catch (err) {
@@ -92,21 +102,33 @@ export default function BusinessInfo() {
         address: form.address.trim(),
         state: form.state.trim(),
         pinCode: form.pinCode.trim(),
+        bankName: form.bankName.trim(),
+        accountHolder: form.accountHolder.trim(),
+        accountNumber: form.accountNumber.trim(),
+        ifscCode: form.ifscCode.trim().toUpperCase(),
+        branch: form.branch.trim(),
       });
 
       if (result.company) {
+        const company = result.company;
+
         setForm({
-          companyName: result.company.companyName || "",
-          gstin: result.company.gstin || "",
-          email: result.company.email || "",
-          phone: result.company.phone || "",
-          address: result.company.address || "",
-          state: result.company.state || "",
-          pinCode: result.company.pinCode || "",
+          companyName: company.companyName || "",
+          gstin: company.gstin || "",
+          email: company.email || "",
+          phone: company.phone || "",
+          address: company.address || "",
+          state: company.state || "",
+          pinCode: company.pinCode || "",
+          bankName: company.bankName || "",
+          accountHolder: company.accountHolder || "",
+          accountNumber: company.accountNumber || "",
+          ifscCode: company.ifscCode || "",
+          branch: company.branch || "",
         });
       }
 
-      setMessage("Company details saved successfully.");
+      setMessage("Company and bank details saved successfully.");
     } catch (err) {
       setError(
         err instanceof Error
@@ -130,8 +152,9 @@ export default function BusinessInfo() {
   return (
     <div className="card" style={{ maxWidth: 760 }}>
       <h3>Company Master</h3>
+
       <p style={{ color: "#64748b", marginBottom: 20 }}>
-        Enter the business details used in your billing and invoices.
+        Enter the business and bank details used in your billing and invoices.
       </p>
 
       {error && (
@@ -189,6 +212,40 @@ export default function BusinessInfo() {
           onChange={(e) => updateField("pinCode", e.target.value)}
         />
 
+        <h4 style={{ gridColumn: "1 / -1", marginBottom: 0 }}>
+          Bank Details
+        </h4>
+
+        <Input
+          placeholder="Bank Name"
+          value={form.bankName}
+          onChange={(e) => updateField("bankName", e.target.value)}
+        />
+
+        <Input
+          placeholder="Account Holder Name"
+          value={form.accountHolder}
+          onChange={(e) => updateField("accountHolder", e.target.value)}
+        />
+
+        <Input
+          placeholder="Account Number"
+          value={form.accountNumber}
+          onChange={(e) => updateField("accountNumber", e.target.value)}
+        />
+
+        <Input
+          placeholder="IFSC Code"
+          value={form.ifscCode}
+          onChange={(e) => updateField("ifscCode", e.target.value)}
+        />
+
+        <Input
+          placeholder="Branch"
+          value={form.branch}
+          onChange={(e) => updateField("branch", e.target.value)}
+        />
+
         <Button
           variant="primary"
           onClick={handleSave}
@@ -200,3 +257,4 @@ export default function BusinessInfo() {
     </div>
   );
 }
+
