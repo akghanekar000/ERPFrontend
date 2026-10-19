@@ -70,6 +70,11 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
   return (
     <div className="invoice-default-template text-black">
       <header className="grid grid-cols-1 gap-4 border-b-2 border-black pb-4 sm:grid-cols-2">
+        <div className="text-right text-xs font-bold uppercase leading-6">
+          <p>Original for Buyer</p>
+           <p>Duplicate for Transporter</p>
+        </div>
+
         <div>
           <p className="text-xs font-bold uppercase tracking-widest">
             Seller / Supplier
