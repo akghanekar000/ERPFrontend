@@ -6,6 +6,8 @@ import Papa from 'papaparse';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import InvoicePreview from './InvoicePreview';
+import { getCompany } from '../../services/company.service';
+import type { Company } from '../../services/company.service';
 
 import { useAuth } from '../../components/AuthContext';
 import {
