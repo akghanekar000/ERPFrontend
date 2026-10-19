@@ -145,15 +145,56 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
           )}
         </div>
 
-        <div className="border border-black p-3">
-          <h3 className="mb-2 text-sm font-bold uppercase">
-            Invoice Summary
-          </h3>
+      
+<div className="border border-black p-3">
+  <h3 className="mb-2 text-sm font-bold uppercase">
+    Bank Details
+  </h3>
 
-          <div className="flex justify-between gap-2 text-sm">
-            <span>Total line items</span>
-            <span>{items.length}</span>
-          </div>
+  {company?.bankName ||
+  company?.accountHolder ||
+  company?.accountNumber ||
+  company?.ifscCode ||
+  company?.branch ? (
+    <div className="space-y-2 text-sm">
+      {company?.bankName && (
+        <div>
+          <strong>Bank:</strong> {company.bankName}
+        </div>
+      )}
+
+      {company?.accountHolder && (
+        <div>
+          <strong>Account Holder:</strong> {company.accountHolder}
+        </div>
+      )}
+
+      {company?.accountNumber && (
+        <div className="break-all">
+          <strong>Account No.:</strong> {company.accountNumber}
+        </div>
+      )}
+
+      {company?.ifscCode && (
+        <div>
+          <strong>IFSC:</strong> {company.ifscCode}
+        </div>
+      )}
+
+      {company?.branch && (
+        <div>
+          <strong>Branch:</strong> {company.branch}
+        </div>
+      )}
+    </div>
+  ) : (
+    <p className="text-sm text-slate-600">
+      Add your bank details in Company Settings.
+    </p>
+  )}
+<
+  /div>
+          
 
           <div className="mt-2 flex justify-between gap-2 text-sm">
             <span>Taxable value</span>
