@@ -6,23 +6,24 @@ import Papa from 'papaparse';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import InvoicePreview from './InvoicePreview';
-import { getCompany } from '../../services/company.service';
-import type { Company } from '../../services/company.service';
 
 import { useAuth } from '../../components/AuthContext';
 import {
   listInvoices,
   deleteInvoice,
 } from '../../services/invoices.service';
+import { getCompany } from '../../services/company.service';
+import type { Company } from '../../services/company.service';
 import { addAuditLogEntry } from '../../services/auditlog.service';
 import { formatDate } from '../../utils/formatDate';
 
 type InvoiceRow = {
-    taxableAmount?: number;
+  taxableAmount?: number;
   cgst?: number;
   sgst?: number;
   igst?: number;
   notes?: string;
+
   sellerSnapshot?: {
     companyName?: string;
     gstin?: string;
@@ -31,7 +32,13 @@ type InvoiceRow = {
     address?: string;
     state?: string;
     pinCode?: string;
+    bankName?: string;
+    accountHolder?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    branch?: string;
   };
+
   customerSnapshot?: {
     name?: string;
     gst?: string;
@@ -41,6 +48,7 @@ type InvoiceRow = {
     address?: string;
     state?: string;
   };
+
   items?: Array<{
     qty?: number;
     price?: number;
@@ -51,6 +59,7 @@ type InvoiceRow = {
     product?: string | { name?: string };
     name?: string;
   }>;
+
   id?: string;
   _id?: string;
   invoiceNumber?: string;
@@ -61,7 +70,6 @@ type InvoiceRow = {
   tax?: number;
   total?: number;
   status?: string;
-  
 };
 
 function invoiceId(invoice: InvoiceRow) {
@@ -102,33 +110,48 @@ export default function InvoiceList() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] =
-  useState<InvoiceRow | null>(null);
- 
+    useState<InvoiceRow | null>(null);
+  const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
+
   const canManage = user?.role === 'admin' || user?.role === 'manager';
 
+  // Load the current company profile, including its saved bank details.
   useEffect(() => {
-  let active = true;
+    let active = true;
 
-    getCompany()
-      .then((company) => {
+    async function loadCompany() {
+      try {
+        const company = await getCompany();
+
         if (active) {
           setCurrentCompany(company);
         }
-      })
-      .catch(() => {
+      } catch {
         if (active) {
-        toast.error('Could not load company bank details for invoice preview.');
+          toast.error(
+            'Could not load company bank details for invoice preview.'
+          );
         }
-      });
+      }
+    }
+
+    loadCompany();
 
     return () => {
       active = false;
-      };
-    }, []);
+    };
+  }, []);
+
+  // Load invoices separately from the company profile.
+  useEffect(() => {
+    let active = true;
+
     async function loadInvoices() {
       setLoading(true);
+
       try {
         const data = await listInvoices();
+
         if (active) {
           setInvoices(Array.isArray(data) ? data : []);
         }
@@ -137,7 +160,9 @@ export default function InvoiceList() {
           toast.error('Could not load invoices. Please try again.');
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -167,7 +192,10 @@ export default function InvoiceList() {
 
   const unpaidTotal = invoices.reduce((sum, invoice) => {
     const status = String(invoice.status ?? 'UNPAID').toUpperCase();
-    return status === 'UNPAID' ? sum + Number(invoice.total ?? 0) : sum;
+
+    return status === 'UNPAID'
+      ? sum + Number(invoice.total ?? 0)
+      : sum;
   }, 0);
 
   function exportCsv() {
@@ -185,6 +213,7 @@ export default function InvoiceList() {
     const blob = new Blob(['\uFEFF' + csv], {
       type: 'text/csv;charset=utf-8;',
     });
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 
@@ -198,6 +227,7 @@ export default function InvoiceList() {
 
   function readCsv(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     Papa.parse(file, {
@@ -216,6 +246,7 @@ export default function InvoiceList() {
 
   function uploadLogo(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -227,17 +258,21 @@ export default function InvoiceList() {
     const reader = new FileReader();
 
     reader.onload = () => {
-      if (typeof reader.result === 'string') setLogo(reader.result);
+      if (typeof reader.result === 'string') {
+        setLogo(reader.result);
+      }
     };
 
     reader.onerror = () => toast.error('Could not read the image.');
+
     reader.readAsDataURL(file);
     event.target.value = '';
   }
- function previewSavedInvoice(invoice: InvoiceRow) {
-  setSelectedInvoice(invoice);
- }
-  
+
+  function previewSavedInvoice(invoice: InvoiceRow) {
+    setSelectedInvoice(invoice);
+  }
+
   function downloadInvoicePDF(invoice: InvoiceRow) {
     try {
       const doc = new jsPDF();
@@ -261,15 +296,18 @@ export default function InvoiceList() {
       doc.text('INVOICE', left, logo ? 42 : 22);
 
       let y = logo ? 53 : 33;
+
       doc.setFontSize(11);
       doc.text(`Invoice No: ${invoiceNumber(invoice)}`, left, y);
       y += 8;
+
       doc.text(
         `Date: ${invoice.date ? formatDate(invoice.date) : '—'}`,
         left,
         y
       );
       y += 8;
+
       doc.text(`Customer: ${customerName(invoice)}`, left, y);
       y += 12;
 
@@ -280,15 +318,22 @@ export default function InvoiceList() {
       doc.setFontSize(10);
       doc.text(`Subtotal: INR ${money(invoice.subtotal)}`, left, y);
       y += 7;
+
       doc.text(`Tax: INR ${money(invoice.tax)}`, left, y);
       y += 7;
+
       doc.setFont('helvetica', 'bold');
       doc.text(`Total: INR ${finalMoney(invoice.total)}`, left, y);
       y += 8;
+
       doc.setFont('helvetica', 'normal');
       doc.text(`Status: ${invoice.status ?? 'UNPAID'}`, left, y);
 
-      const safeName = invoiceNumber(invoice).replace(/[^a-zA-Z0-9_-]/g, '_');
+      const safeName = invoiceNumber(invoice).replace(
+        /[^a-zA-Z0-9_-]/g,
+        '_'
+      );
+
       doc.save(`Invoice_${safeName}.pdf`);
       toast.success('Invoice PDF downloaded.');
     } catch {
@@ -298,6 +343,7 @@ export default function InvoiceList() {
 
   async function handleDelete(invoice: InvoiceRow) {
     const id = invoiceId(invoice);
+
     if (!id) {
       toast.error('This invoice has no valid ID.');
       return;
@@ -315,6 +361,7 @@ export default function InvoiceList() {
 
     try {
       await deleteInvoice(id);
+
       setInvoices((current) =>
         current.filter((item) => invoiceId(item) !== id)
       );
@@ -358,10 +405,14 @@ export default function InvoiceList() {
 
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm font-medium text-blue-700">SALES MANAGEMENT</p>
+          <p className="text-sm font-medium text-blue-700">
+            SALES MANAGEMENT
+          </p>
+
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
             Invoices
           </h1>
+
           <p className="mt-1 text-sm text-gray-500">
             Review invoices, track totals and download invoice documents.
           </p>
@@ -409,7 +460,9 @@ export default function InvoiceList() {
         <div className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-semibold text-gray-900">Invoice register</h2>
+              <h2 className="font-semibold text-gray-900">
+                Invoice register
+              </h2>
               <p className="mt-1 text-sm text-gray-500">
                 Search and manage your existing invoices.
               </p>
@@ -480,10 +533,14 @@ export default function InvoiceList() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
-            <h3 className="font-semibold text-gray-900">No invoices found</h3>
+            <h3 className="font-semibold text-gray-900">
+              No invoices found
+            </h3>
+
             <p className="mt-1 text-sm text-gray-500">
               Try another search or create your first invoice.
             </p>
+
             <Link
               to="/invoices/new"
               className="mt-4 inline-flex rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
@@ -507,10 +564,12 @@ export default function InvoiceList() {
                         <p className="break-words font-semibold text-gray-900">
                           {invoiceNumber(invoice)}
                         </p>
+
                         <p className="mt-1 break-words text-sm text-gray-600">
                           {customerName(invoice)}
                         </p>
                       </div>
+
                       <span
                         className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusClass(invoice.status)}`}
                       >
@@ -525,6 +584,7 @@ export default function InvoiceList() {
                           {invoice.date ? formatDate(invoice.date) : '—'}
                         </p>
                       </div>
+
                       <div>
                         <p className="text-xs text-gray-500">Total</p>
                         <p className="mt-1 font-bold text-gray-900">
@@ -541,6 +601,7 @@ export default function InvoiceList() {
                       >
                         Preview
                       </button>
+
                       <button
                         type="button"
                         onClick={() => downloadInvoicePDF(invoice)}
@@ -548,6 +609,7 @@ export default function InvoiceList() {
                       >
                         Download PDF
                       </button>
+
                       {canManage && (
                         <button
                           type="button"
@@ -571,11 +633,16 @@ export default function InvoiceList() {
                     <th className="px-5 py-4 font-semibold">Invoice</th>
                     <th className="px-5 py-4 font-semibold">Date</th>
                     <th className="px-5 py-4 font-semibold">Customer</th>
-                    <th className="px-5 py-4 text-right font-semibold">Total</th>
+                    <th className="px-5 py-4 text-right font-semibold">
+                      Total
+                    </th>
                     <th className="px-5 py-4 font-semibold">Status</th>
-                    <th className="px-5 py-4 text-right font-semibold">Actions</th>
+                    <th className="px-5 py-4 text-right font-semibold">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-gray-100">
                   {filtered.map((invoice) => {
                     const id = invoiceId(invoice);
@@ -585,15 +652,19 @@ export default function InvoiceList() {
                         <td className="px-5 py-4 font-semibold text-gray-900">
                           {invoiceNumber(invoice)}
                         </td>
+
                         <td className="px-5 py-4 text-gray-600">
                           {invoice.date ? formatDate(invoice.date) : '—'}
                         </td>
+
                         <td className="px-5 py-4 text-gray-700">
                           {customerName(invoice)}
                         </td>
+
                         <td className="px-5 py-4 text-right font-semibold text-gray-900">
                           ₹{finalMoney(invoice.total)}
                         </td>
+
                         <td className="px-5 py-4">
                           <span
                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusClass(invoice.status)}`}
@@ -601,15 +672,17 @@ export default function InvoiceList() {
                             {invoice.status ?? 'UNPAID'}
                           </span>
                         </td>
+
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
-                           <button
-                             type="button"
-                             onClick={() => previewSavedInvoice(invoice)}
-                             className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
-                           >
-                             Preview
-                           </button>
+                            <button
+                              type="button"
+                              onClick={() => previewSavedInvoice(invoice)}
+                              className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                            >
+                              Preview
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => downloadInvoicePDF(invoice)}
@@ -617,6 +690,7 @@ export default function InvoiceList() {
                             >
                               PDF
                             </button>
+
                             {canManage && (
                               <button
                                 type="button"
@@ -638,54 +712,53 @@ export default function InvoiceList() {
           </>
         )}
       </section>
+
       {selectedInvoice && (
-       <InvoicePreview
-         company={{(selectedInvoice.sellerSnapshot ?? {}),
-          bankName: currentCompany?.bankName ?? '',
-          accountHolder: currentCompany?.accountHolder ?? '',
-          accountNumber: currentCompany?.accountNumber ?? '',
-          ifscCode: currentCompany?.ifscCode ?? '',
-          branch: currentCompany?.branch ?? '',
-        }}
-        customer={
-         selectedInvoice.customerSnapshot ??
-         (typeof selectedInvoice.customer === 'object' &&
-         selectedInvoice.customer !== null
-           ? selectedInvoice.customer
-           : { name: customerName(selectedInvoice) })
-       }
-       invoiceNumber={invoiceNumber(selectedInvoice)}
-       date={selectedInvoice.date}
-       items={(selectedInvoice.items ?? []).map((item) => ({
-        name:
-         item.name ??
-         (typeof item.product === 'object'
-          ? item.product?.name
-          : item.product) ??
-         'Product',
-        qty: Number(item.qty ?? 0),
-        price: Number(item.price ?? 0),
-        gstRate: Number(item.gstRate ?? 0),
-        taxableAmount: Number(item.taxableAmount ?? 0),
-        taxAmount: Number(item.taxAmount ?? 0),
-        total: Number(item.lineTotal ?? item.taxableAmount ?? 0) +
-        Number(item.taxAmount ?? 0),
-     }))}
-      taxableTotal={Number(
-       selectedInvoice.taxableAmount ?? selectedInvoice.subtotal ?? 0
+        <InvoicePreview
+          company={{
+            ...(selectedInvoice.sellerSnapshot ?? {}),
+            bankName: currentCompany?.bankName ?? '',
+            accountHolder: currentCompany?.accountHolder ?? '',
+            accountNumber: currentCompany?.accountNumber ?? '',
+            ifscCode: currentCompany?.ifscCode ?? '',
+            branch: currentCompany?.branch ?? '',
+          }}
+          customer={
+            selectedInvoice.customerSnapshot ??
+            (typeof selectedInvoice.customer === 'object' &&
+            selectedInvoice.customer !== null
+              ? selectedInvoice.customer
+              : { name: customerName(selectedInvoice) })
+          }
+          invoiceNumber={invoiceNumber(selectedInvoice)}
+          date={selectedInvoice.date}
+          items={(selectedInvoice.items ?? []).map((item) => ({
+            name:
+              item.name ??
+              (typeof item.product === 'object'
+                ? item.product?.name
+                : item.product) ??
+              'Product',
+            qty: Number(item.qty ?? 0),
+            price: Number(item.price ?? 0),
+            gstRate: Number(item.gstRate ?? 0),
+            taxableAmount: Number(item.taxableAmount ?? 0),
+            taxAmount: Number(item.taxAmount ?? 0),
+            total:
+              Number(item.lineTotal ?? item.taxableAmount ?? 0) +
+              Number(item.taxAmount ?? 0),
+          }))}
+          taxableTotal={Number(
+            selectedInvoice.taxableAmount ?? selectedInvoice.subtotal ?? 0
+          )}
+          taxTotal={Number(selectedInvoice.tax ?? 0)}
+          grandTotal={Number(selectedInvoice.total ?? 0)}
+          notes={selectedInvoice.notes}
+          isSaved
+          onClose={() => setSelectedInvoice(null)}
+        />
       )}
-      taxTotal={Number(selectedInvoice.tax ?? 0)}
-      grandTotal={Number(selectedInvoice.total ?? 0)}
-      notes={selectedInvoice.notes}
-      isSaved
-      onClose={() => setSelectedInvoice(null)}
-     />
-    )}
     </div>
   );
 }
 
-      
-
-  
-  
