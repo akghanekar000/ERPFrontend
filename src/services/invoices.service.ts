@@ -14,6 +14,8 @@ export type InvoicePayload = {
   customer: string;
   items: InvoiceItem[];
   notes?: string;
+  invoiceNumber?: string;
+  invoiceDate?: string;
 };
 
 export type Invoice = {
