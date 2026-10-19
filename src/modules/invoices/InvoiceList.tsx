@@ -107,8 +107,24 @@ export default function InvoiceList() {
   const canManage = user?.role === 'admin' || user?.role === 'manager';
 
   useEffect(() => {
-    let active = true;
+  let active = true;
 
+    getCompany()
+      .then((company) => {
+        if (active) {
+          setCurrentCompany(company);
+        }
+      })
+      .catch(() => {
+        if (active) {
+        toast.error('Could not load company bank details for invoice preview.');
+        }
+      });
+
+    return () => {
+      active = false;
+      };
+    }, []);
     async function loadInvoices() {
       setLoading(true);
       try {
