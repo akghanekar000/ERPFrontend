@@ -293,6 +293,54 @@ export default function CreateInvoice() {
 
       <form onSubmit={saveInvoice} className="space-y-6">
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+  <h2 className="text-lg font-bold text-slate-900">
+    Invoice details
+  </h2>
+
+  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <label
+        htmlFor="invoiceNumber"
+        className="block text-sm font-semibold text-slate-700"
+      >
+        Invoice number
+      </label>
+
+      <input
+        id="invoiceNumber"
+        type="text"
+        value={invoiceNumber}
+        onChange={(event) => setInvoiceNumber(event.target.value)}
+        placeholder="Leave blank for automatic numbering"
+        maxLength={50}
+        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+      />
+
+      <p className="mt-1 text-xs text-slate-500">
+        Leave blank to use the next automatic invoice number.
+      </p>
+    </div>
+
+    <div>
+      <label
+        htmlFor="invoiceDate"
+        className="block text-sm font-semibold text-slate-700"
+      >
+        Invoice date *
+      </label>
+
+      <input
+        id="invoiceDate"
+        type="date"
+        required
+        value={invoiceDate}
+        onChange={(event) => setInvoiceDate(event.target.value)}
+        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+      />
+    </div>
+  </div>
+</section>
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           <h2 className="text-lg font-bold text-slate-900">
             Customer details
           </h2>
