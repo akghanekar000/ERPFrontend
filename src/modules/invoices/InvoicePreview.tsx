@@ -3,7 +3,7 @@ import React, { useCallback, useRef, useState } from 'react';
 
 import DefaultInvoiceTemplate from './Templates/DefaultInvoiceTemplate';
 import CustomInvoiceTemplate from './Templates/CustomInvoiceTemplate';
-import type { InvoiceTemplateData } from './templates/DefaultInvoiceTemplate';
+import type { InvoiceTemplateData } from './Templates/DefaultInvoiceTemplate';
 
 export type PreviewCompany = {
   companyName?: string;
