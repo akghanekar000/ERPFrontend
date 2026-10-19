@@ -1,8 +1,8 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 
-import DefaultInvoiceTemplate from './templates/DefaultInvoiceTemplate';
-import CustomInvoiceTemplate from './templates/CustomInvoiceTemplate';
+import DefaultInvoiceTemplate from './Templates/DefaultInvoiceTemplate';
+import CustomInvoiceTemplate from './Templates/CustomInvoiceTemplate';
 import type { InvoiceTemplateData } from './templates/DefaultInvoiceTemplate';
 
 export type PreviewCompany = {
