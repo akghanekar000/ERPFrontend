@@ -225,16 +225,18 @@ export default function CreateInvoice() {
 
     try {
       await createInvoice({
-        customer: customerId,
-        items: lines.map((item) => ({
-          product: item.productId,
-          qty: item.qty,
-          price: item.price,
-          priceMode: item.priceMode,
-          gstRate: item.gstRate,
+       customer: customerId,
+       invoiceNumber: invoiceNumber.trim() || undefined,
+       invoiceDate,
+       items: lines.map((item) => ({
+        product: item.productId,
+        qty: item.qty,
+        price: item.price,
+        priceMode: item.priceMode,
+        gstRate: item.gstRate,
         })),
-        notes: notes.trim(),
-      });
+      notes: notes.trim(),
+     });
 
       navigate('/invoices');
     } catch (err: unknown) {
