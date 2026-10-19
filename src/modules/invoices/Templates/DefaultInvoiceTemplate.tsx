@@ -262,11 +262,12 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
           <div className="flex justify-between gap-2 py-1">
             <span>Round Off</span>
             <span>{money(roundOff)}</span>
-        </div>
-        <div className="mt-1 flex justify-between gap-2 border-t border-black pt-2 text-[11px] font-bold">
-          <span>Total Payable</span>
-          <span>{money(roundedTotal)}</span>
-      </div>
+          </div>
+      
+          <div className="mt-1 flex justify-between gap-2 border-t border-black pt-2 text-[11px] font-bold">
+            <span>Total Payable</span>
+            <span>{money(roundedTotal)}</span>
+         </div>
 
       <div className="mb-2 grid grid-cols-2 gap-2">
         <div className="border border-black p-2">
