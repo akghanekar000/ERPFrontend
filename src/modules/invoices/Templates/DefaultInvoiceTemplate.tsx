@@ -61,9 +61,12 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
     return summary;
   }, []);
 
+  const rawTotal = Number(data.grandTotal || 0);
+
+  const roundedTotal = Math.round(rawTotal);
+
   const roundOff = Number(
-    (Math.round(Number(data.grandTotal || 0) -
-      Number(data.grandTotal || 0)).toFixed(2)),
+  (roundedTotal - rawTotal).toFixed(2),
   );
 
   const bankDetails = [
@@ -256,11 +259,13 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
             <span>Total GST</span>
             <span>{money(data.taxTotal)}</span>
           </div>
-          <div className="mt-1 flex justify-between gap-2 border-t border-black pt-2 text-[11px] font-bold">
-            <span>Total Payable</span>
-            <span>{money(data.grandTotal)}</span>
-          </div>
+          <div className="flex justify-between gap-2 py-1">
+            <span>Round Off</span>
+            <span>{money(roundOff)}</span>
         </div>
+        <div className="mt-1 flex justify-between gap-2 border-t border-black pt-2 text-[11px] font-bold">
+          <span>Total Payable</span>
+          <span>{money(roundedTotal)}</span>
       </div>
 
       <div className="mb-2 grid grid-cols-2 gap-2">
