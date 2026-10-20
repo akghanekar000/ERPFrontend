@@ -112,7 +112,6 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
       });
     }
    });
-   []);
 
   const roundedTotal = Number(data.grandTotal || 0);
   const roundOff = Number(data.roundOff || 0);
