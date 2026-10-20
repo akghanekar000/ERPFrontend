@@ -753,23 +753,13 @@ export default function InvoiceList() {
             selectedInvoice.taxableAmount ?? selectedInvoice.subtotal ?? 0
           )}
           taxTotal={Number(selectedInvoice.tax ?? 0)}
-          grandTotal={Number(selectedInvoice.total ?? 0)}
+          grandTotal={Math.round(Number(selectedInvoice.total ?? 0))}
           roundOff={Number(
-          (
-           Math.round(
-             Number(
-               selectedInvoice.taxableAmount ??
-               selectedInvoice.subtotal ?? 0
-             ) + Number(selectedInvoice.tax ?? 0)
-          ) -
-          (
-            Number(
-              selectedInvoice.taxableAmount ??
-              selectedInvoice.subtotal ?? 0
-            ) + Number(selectedInvoice.tax ?? 0)
-          )
-        ).toFixed(2)
-      )}
+            (
+             Math.round(Number(selectedInvoice.total ?? 0)) -
+             Number(selectedInvoice.total ?? 0)
+             ).toFixed(2)
+          )}
           notes={selectedInvoice.notes}
           isSaved
     
