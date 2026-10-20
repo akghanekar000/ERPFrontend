@@ -274,6 +274,7 @@ export default function CreateInvoice() {
       await createInvoice({
         customer: customerId,
         invoiceNumber: invoiceNumber.trim() || undefined,
+        jurisdiction: jurisdiction.trim(),
         invoiceDate,
         freightCharges,
         packingCharges,
