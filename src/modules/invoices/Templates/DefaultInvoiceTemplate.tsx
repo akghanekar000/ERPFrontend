@@ -18,7 +18,7 @@ export type InvoiceTemplateData = {
   packingCharges?: number;
   roundOff?: number;
   notes?: string;
-  jurisdiction?: string:
+  jurisdiction?: string;
 };
 
 
