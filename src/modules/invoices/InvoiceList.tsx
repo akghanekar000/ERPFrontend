@@ -23,6 +23,7 @@ type InvoiceRow = {
   sgst?: number;
   igst?: number;
   notes?: string;
+  jurisdiction?: string;
 
   sellerSnapshot?: {
     companyName?: string;
@@ -715,6 +716,7 @@ export default function InvoiceList() {
 
       {selectedInvoice && (
         <InvoicePreview
+          jurisdiction={selectedInvoice.jurisdiction}
           company={{
             ...(selectedInvoice.sellerSnapshot ?? {}),
             bankName: currentCompany?.bankName ?? '',
