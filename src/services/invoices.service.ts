@@ -16,6 +16,7 @@ export type InvoicePayload = {
   notes?: string;
   invoiceNumber?: string;
   invoiceDate?: string;
+  jurisdiction?: string;
 };
 
 export type Invoice = {
