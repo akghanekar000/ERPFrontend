@@ -206,6 +206,30 @@ export default function InvoicePreview({
         }
 
         @media print {
+          
+          .invoice-default-template table {
+          width: 100%;
+          border-collapse: collapse;
+          }
+
+          .invoice-default-template table thead {
+          display: table-header-group;
+          }
+
+          .invoice-default-template table tr {
+          break-inside: avoid;
+          page-break-inside: avoid;
+          }
+
+          .invoice-default-template table th,
+          .invoice-default-template table td {
+          border: 1px solid #000;
+          }
+
+          .invoice-default-template .product-table {
+          break-inside: auto;
+          page-break-inside: auto;
+          }
           @page {
             size: A4 portrait;
             margin: 10mm;
