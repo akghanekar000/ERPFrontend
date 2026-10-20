@@ -370,9 +370,6 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
 
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div>
-          <p className="font-bold">
-            For {company?.companyName || 'Seller'}
-          </p>
           <p className="mt-8 border-t border-black pt-1">
             Customer / Receiver Signature
           </p>
