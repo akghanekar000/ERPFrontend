@@ -777,8 +777,8 @@ export default function CreateInvoice() {
       taxAmount: item.taxAmount,
       total: item.total,
     }))}
-    taxableTotal={taxableTotal}
-    taxTotal={taxTotal}
+    taxableTotal={finalTaxableTotal}
+    taxTotal={finalTaxTotal}
     grandTotal={grandTotal}
     freightCharges={freightCharges}
     packingCharges={packingCharges}
