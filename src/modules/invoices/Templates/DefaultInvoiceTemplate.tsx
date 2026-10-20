@@ -235,33 +235,47 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
             <th className={`${heading} w-[20%] text-right`}>Amount (₹)</th>
           </tr>
         </thead>
+        
         <tbody>
-          {items.length === 0 ? (
-            <tr>
-              <td colSpan={7} className={`${cell} text-center`}>
-                No items added
-              </td>
-            </tr>
-          ) : (
-            items.map((item, index) => (
-              <tr key={`${item.name}-${index}`}>
-                <td className={cell}>{index + 1}</td>
-                <td className={cell}>{item.name}</td>
-                <td className={cell}>—</td>
-                <td className={`${cell} text-right`}>{item.qty}</td>
-                <td className={`${cell} text-right`}>
-                  {money(item.price)}
-                </td>
-                <td className={`${cell} text-right`}>
-                  {item.gstRate}%
-                </td>
-                <td className={`${cell} text-right`}>
-                  {money(item.total)}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
+          {items.map((item, index) => (
+         <tr key={`${item.name}-${index}`}>
+         <td className={cell}>{index + 1}</td>
+         <td className={`${cell} break-words`}>
+           {item.name}
+         </td>
+         <td className={cell}>—</td>
+         <td className={`${cell} text-right`}>
+           {item.qty}
+         </td>
+         <td className={`${cell} text-right`}>
+           {money(item.price)}
+         </td>
+         <td className={`${cell} text-right`}>
+           {item.gstRate}%
+         </td>
+         <td className={`${cell} text-right`}>
+           {money(item.total)}
+         </td>
+         </tr>
+         ))}
+
+  {Array.from({
+    length: Math.max(0, 14 - items.length),
+  }).map((_, index) => (
+    <tr key={`blank-product-${index}`}>
+      <td className={cell} style={{ height: '7mm' }}>
+        &nbsp;
+      </td>
+      <td className={cell}>&nbsp;</td>
+      <td className={cell}>&nbsp;</td>
+      <td className={cell}>&nbsp;</td>
+      <td className={cell}>&nbsp;</td>
+      <td className={cell}>&nbsp;</td>
+      <td className={cell}>&nbsp;</td>
+    </tr>
+  ))}
+      </tbody>
+
       </table>
 
       <div className="mb-2 grid grid-cols-2 gap-2">
