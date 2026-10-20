@@ -64,13 +64,10 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
     return summary;
   }, []);
 
-  const rawTotal = Number(data.grandTotal || 0);
-
-  const roundedTotal = Math.round(rawTotal);
-
-  const roundOff = Number(
-  (roundedTotal - rawTotal).toFixed(2),
-  );
+  const roundedTotal = Number(data.grandTotal || 0);
+  const roundOff = Number(data.roundOff || 0);
+  const freightCharges = Number(data.freightCharges || 0);
+  const packingCharges = Number(data.packingCharges || 0);
 
   const bankDetails = [
     ['Bank Name', company?.bankName],
@@ -254,8 +251,18 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
 
         <div className="border border-black p-2">
           <p className="mb-2 font-bold uppercase">Invoice Total</p>
+                    <div className="flex justify-between gap-2 py-1">
+            <span>Freight Charges</span>
+            <span>{money(freightCharges)}</span>
+          </div>
+
           <div className="flex justify-between gap-2 py-1">
-            <span>Taxable Amount</span>
+            <span>Packing Charges</span>
+            <span>{money(packingCharges)}</span>
+          </div>
+
+          <div className="flex justify-between gap-2 py-1">
+            <span>Taxable Amount (including charges)</span>
             <span>{money(data.taxableTotal)}</span>
           </div>
           <div className="flex justify-between gap-2 py-1">
