@@ -58,6 +58,7 @@ export default function InvoicePreview({
   grandTotal,
   freightCharges, 
   packingCharges,
+  roundOff,
   notes,
   onClose,
 }: InvoicePreviewProps) {
@@ -78,6 +79,7 @@ export default function InvoicePreview({
     grandTotal,
     freightCharges,
     packingCharges,
+    roundOff,
     notes,
   };
 
