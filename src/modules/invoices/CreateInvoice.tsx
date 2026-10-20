@@ -58,7 +58,7 @@ export default function CreateInvoice() {
   const [company, setCompany] = useState<Company | null>(null);
   const [customerId, setCustomerId] = useState('');
   const [invoiceNumber, setInvoiceNumber] = useState('');
-
+  const [jurisdiction, setJurisdiction] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(() => {
     const now = new Date();
 
@@ -389,6 +389,24 @@ export default function CreateInvoice() {
         className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
       />
     </div>
+    <div className="mt-4">
+  <label
+    htmlFor="jurisdiction"
+    className="block text-sm font-semibold text-slate-700"
+  >
+    Subject to Jurisdiction
+  </label>
+
+  <input
+    id="jurisdiction"
+    type="text"
+    value={jurisdiction}
+    onChange={(event) => setJurisdiction(event.target.value)}
+    placeholder="Enter jurisdiction, e.g. Mumbai, Maharashtra"
+    maxLength={150}
+    className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+  />
+</div>
   </div>
 </section>
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
