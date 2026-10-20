@@ -134,9 +134,11 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
           <p>Duplicate for Transporter</p>
         </div>
         <div className="text-center">
-          <p className="mb-1 text-[7px] leading-right"
+          <p className="mb-1 text-[7px] leading-right">
             SUBJECT TO {data.jurisdiction || '[JURISDICTION]'}
             JURISDICTION
+          </p>
+            
           <h1 className="text-base font-bold uppercase tracking-wide">
             Tax Invoice
           </h1>
