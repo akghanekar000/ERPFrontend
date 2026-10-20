@@ -781,6 +781,7 @@ export default function CreateInvoice() {
       {showPreview && (
   <InvoicePreview
     company={company}
+    jurisdiction={jurisdiction}
     customer={
       customers.find((customer) => customerIdOf(customer) === customerId) ?? null
     }
