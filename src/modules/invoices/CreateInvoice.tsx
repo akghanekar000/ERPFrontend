@@ -708,12 +708,12 @@ export default function CreateInvoice() {
 
             <div className="flex justify-between gap-4 text-sm">
               <span className="text-slate-600">Total taxable amount</span>
-              <span className="text-slate-900">{money(taxableTotal)}</span>
+              <span className="text-slate-900">{money(finalTaxableTotal)}</span>
             </div>
 
             <div className="flex justify-between gap-4 text-sm">
               <span className="text-slate-600">Total GST</span>
-              <span className="text-slate-900">{money(taxTotal)}</span>
+              <span className="text-slate-900">{money(finalTaxTotal)}</span>
             </div>
 
             <div className="flex justify-between gap-4 border-t border-slate-200 pt-4">
