@@ -780,6 +780,9 @@ export default function CreateInvoice() {
     taxableTotal={taxableTotal}
     taxTotal={taxTotal}
     grandTotal={grandTotal}
+    freightCharges={freightCharges}
+    packingCharges={packingCharges}
+    roundOff={roundOff}
     notes={notes}
     onClose={() => setShowPreview(false)}
   />
