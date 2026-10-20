@@ -149,7 +149,7 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
         </div>
       </div>
 
-      <table className="mb-2 w-full border-collapse">
+      <table className="product-table mb-2 w-full table-fixed border-collapse">
         <tbody>
           <tr>
             <td className={`${cell} w-1/2`}>
