@@ -44,25 +44,75 @@ const heading = 'border border-black bg-gray-100 px-1.5 py-1 text-left font-bold
 
 export default function DefaultInvoiceTemplate({ data }: Props) {
   const { company, customer, items } = data;
+  const baseTaxableTotal = items.reduce(
+    (sum, item) => sum + Number(item.taxableAmount || 0),
+    0,
+  );
 
-  const gstSummary = items.reduce<
-    { rate: number; taxable: number; tax: number }[]
-  >((summary, item) => {
+  const combinedCharges =
+    Number(data.freightCharges || 0) +
+    Number(data.packingCharges || 0);
+
+  const gstSummary: {
+    rate: number;
+    taxable: number;
+    tax: number;
+  }[] = [];
+
+  let allocatedCharges = 0;
+
+  items.forEach((item, index) => {
     const rate = Number(item.gstRate || 0);
-    const existing = summary.find((entry) => entry.rate === rate);
+    const itemTaxable = Number(item.taxableAmount || 0);
+    const itemTax = Number(item.taxAmount || 0);
+
+    const chargeShare =
+      combinedCharges <= 0 || baseTaxableTotal <= 0
+        ? 0
+        : index === items.length - 1
+          ? Number(
+              (combinedCharges - allocatedCharges).toFixed(2),
+            )
+          : Number(
+              (
+                combinedCharges *
+                itemTaxable /
+                baseTaxableTotal
+              ).toFixed(2),
+            );
+
+    allocatedCharges = Number(
+      (allocatedCharges + chargeShare).toFixed(2),
+    );
+
+    const chargeTax = Number(
+      (chargeShare * rate / 100).toFixed(2),
+    );
+
+    const existing = gstSummary.find(
+      (entry) => entry.rate === rate,
+    );
 
     if (existing) {
-      existing.taxable += Number(item.taxableAmount || 0);
-      existing.tax += Number(item.taxAmount || 0);
+      existing.taxable = Number(
+        (existing.taxable + itemTaxable + chargeShare).toFixed(2),
+      );
+      existing.tax = Number(
+        (existing.tax + itemTax + chargeTax).toFixed(2),
+      );
     } else {
-      summary.push({
+      gstSummary.push({
         rate,
-        taxable: Number(item.taxableAmount || 0),
-        tax: Number(item.taxAmount || 0),
+        taxable: Number(
+          (itemTaxable + chargeShare).toFixed(2),
+        ),
+        tax: Number(
+          (itemTax + chargeTax).toFixed(2),
+        ),
       });
     }
-    return summary;
-  }, []);
+   });
+   []);
 
   const roundedTotal = Number(data.grandTotal || 0);
   const roundOff = Number(data.roundOff || 0);
