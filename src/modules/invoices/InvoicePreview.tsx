@@ -71,7 +71,7 @@ export default function InvoicePreview({
 
   const data: InvoiceTemplateData = {
     company,
-    Jurisdiction,
+    jurisdiction,
     customer,
     invoiceNumber,
     date,
