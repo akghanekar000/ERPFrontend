@@ -5,7 +5,6 @@ import type {
   PreviewCustomer,
   PreviewItem,
 } from '../InvoicePreview';
-
 export type InvoiceTemplateData = {
   company: PreviewCompany | null;
   customer: PreviewCustomer | null;
@@ -15,8 +14,12 @@ export type InvoiceTemplateData = {
   taxableTotal: number;
   taxTotal: number;
   grandTotal: number;
+  freightCharges?: number;
+  packingCharges?: number;
+  roundOff?: number;
   notes?: string;
 };
+
 
 type Props = {
   data: InvoiceTemplateData;
