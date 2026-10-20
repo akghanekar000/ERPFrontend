@@ -18,6 +18,7 @@ export type InvoiceTemplateData = {
   packingCharges?: number;
   roundOff?: number;
   notes?: string;
+  jurisdiction?: string:
 };
 
 
@@ -134,9 +135,10 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
           <p>Duplicate for Transporter</p>
         </div>
         <div className="text-center">
-          <p className="mb-1 text-[7px] leading-right">
-            SUBJECT TO {data.jurisdiction || '[JURISDICTION]'}
-            JURISDICTION
+          <p className="mb-1 text-[7px]">
+            {data.jurisdiction?.trim()
+              ? `SUBJECT TO ${data.jurisdiction.trim()} JURISDICTION`
+            : ''}
           </p>
             
           <h1 className="text-base font-bold uppercase tracking-wide">
