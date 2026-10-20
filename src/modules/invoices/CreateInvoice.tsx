@@ -70,6 +70,8 @@ export default function CreateInvoice() {
   });
   const [showPreview, setShowPreview] = useState(false);
   const [notes, setNotes] = useState('');
+  const [freightCharges, setFreightCharges] = useState(0);
+  const [packingCharges, setPackingCharges] = useState(0);
   const [items, setItems] = useState<InvoiceLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -146,11 +148,45 @@ export default function CreateInvoice() {
     lines.reduce((sum, item) => sum + item.taxAmount, 0),
   );
 
-  const grandTotal = roundMoney(taxableTotal + taxTotal);
-
-  const enteredTotal = roundMoney(
-    lines.reduce((sum, item) => sum + item.enteredAmount, 0),
+  const combinedCharges = roundMoney(
+    freightCharges + packingCharges,
   );
+
+  const chargeTax = taxableTotal > 0
+    ? roundMoney(
+        lines.reduce(
+          (sum, item) =>
+            sum +
+            (combinedCharges *
+              item.taxableAmount /
+              taxableTotal) *
+              item.gstRate /
+              100,
+          0,
+        ),
+      )
+    : 0;
+
+  const finalTaxableTotal = roundMoney(
+    taxableTotal + combinedCharges,
+  );
+
+  const finalTaxTotal = roundMoney(
+    taxTotal + chargeTax,
+  );
+
+  const rawGrandTotal = roundMoney(
+    finalTaxableTotal + finalTaxTotal,
+  );
+
+  const roundOff = roundMoney(
+    Math.round(rawGrandTotal) - rawGrandTotal,
+  );
+
+  const grandTotal = Math.round(rawGrandTotal);
+    const enteredTotal = roundMoney(
+      lines.reduce((sum, item) => sum + item.enteredAmount, 0),
+    );
 
   const addItem = () => {
     if (!products.length) {
@@ -395,7 +431,60 @@ export default function CreateInvoice() {
             your company and customer state details. Make sure both are correct.
           </p>
         </section>
+        
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+          <h2 className="text-lg font-bold text-slate-900">
+            Freight and packing charges
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            These charges are added to the taxable value. GST is calculated
+            using the rates of the invoice items.
+          </p>
 
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+          <label
+            htmlFor="freightCharges"
+            className="block text-sm font-semibold text-slate-700"
+          >
+            Freight charges (₹)
+          </label>
+        <input
+          id="freightCharges"
+          type="number"
+          min="0"
+          step="0.01"
+          value={freightCharges}
+          onChange={(event) =>
+            setFreightCharges(Math.max(0, Number(event.target.value) || 0))
+          }
+          className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+        />
+      </div>
+
+      <div>
+      <label
+          htmlFor="packingCharges"
+          className="block text-sm font-semibold text-slate-700"
+       >
+        Packing charges (₹)
+       </label>
+           <input
+             id="packingCharges"
+             type="number"
+             min="0"
+             step="0.01"
+             value={packingCharges}
+             onChange={(event) =>
+               setPackingCharges(Math.max(0, Number(event.target.value) || 0))
+             }
+             className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+           />
+           </div>
+         </div>
+       </section>
+
+        
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
