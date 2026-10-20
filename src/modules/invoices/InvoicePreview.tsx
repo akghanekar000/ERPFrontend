@@ -49,6 +49,7 @@ type InvoicePreviewProps = InvoiceTemplateData & {
 export default function InvoicePreview({
   isSaved,
   company,
+  jurisdiction,
   customer,
   invoiceNumber,
   date,
@@ -70,6 +71,7 @@ export default function InvoicePreview({
 
   const data: InvoiceTemplateData = {
     company,
+    Jurisdiction,
     customer,
     invoiceNumber,
     date,
