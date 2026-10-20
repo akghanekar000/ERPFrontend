@@ -272,10 +272,12 @@ export default function CreateInvoice() {
 
     try {
       await createInvoice({
-       customer: customerId,
-       invoiceNumber: invoiceNumber.trim() || undefined,
-       invoiceDate,
-       items: lines.map((item) => ({
+        customer: customerId,
+        invoiceNumber: invoiceNumber.trim() || undefined,
+        invoiceDate,
+        freightCharges,
+        packingCharges,
+        items: lines.map((item) => ({
         product: item.productId,
         qty: item.qty,
         price: item.price,
