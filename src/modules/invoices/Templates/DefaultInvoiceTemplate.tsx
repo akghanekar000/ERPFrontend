@@ -262,9 +262,11 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
          <td className={`${cell} text-right`}>
            {money(item.price)}
          </td>
-         <td className={`${cell} text-right`}>
-           {money(item.discountAmount || 0)}
-         </td>
+        <td className={`${cell} text-right`}>
+          {item.discountType === 'percentage'
+            ? `${Number(item.discountValue || 0)}%`
+            : money(item.discountAmount || 0)}
+        </td>
          <td className={`${cell} text-right`}>
            {money(item.total)}
          </td>
