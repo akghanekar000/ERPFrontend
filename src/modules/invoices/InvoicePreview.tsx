@@ -39,6 +39,8 @@ export type PreviewItem = {
   taxableAmount: number;
   taxAmount: number;
   total: number;
+  hsnSac?: string;
+  discountAmount?: number;
 };
 
 type InvoicePreviewProps = InvoiceTemplateData & {
