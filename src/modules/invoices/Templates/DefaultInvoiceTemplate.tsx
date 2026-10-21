@@ -231,12 +231,18 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
         <thead>
           <tr>
             <th className={`${heading} w-[6%]`}>Sr.</th>
-            <th className={`${heading} w-[34%]`}>Description of Goods</th>
+            <th className={`${heading} w-[30%]`}>
+              Description of Goods
+            </th>
             <th className={`${heading} w-[10%]`}>HSN/SAC</th>
-            <th className={`${heading} w-[10%] text-right`}>Qty</th>
+            <th className={`${heading} w-[9%] text-right`}>Qty</th>
             <th className={`${heading} w-[12%] text-right`}>Rate</th>
-            <th className={`${heading} w-[8%] text-right`}>GST%</th>
-            <th className={`${heading} w-[20%] text-right`}>Amount (₹)</th>
+            <th className={`${heading} w-[13%] text-right`}>
+              Discount (₹)
+            </th>
+            <th className={`${heading} w-[20%] text-right`}>
+              Amount (₹)
+            </th>
           </tr>
         </thead>
         
