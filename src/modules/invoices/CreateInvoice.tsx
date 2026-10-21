@@ -901,6 +901,8 @@ export default function CreateInvoice() {
       taxableAmount: item.taxableAmount,
       taxAmount: item.taxAmount,
       total: item.total,
+      hsnSac: item.hsnSac,
+      discountAmount: item.discountAmount,
     }))}
     taxableTotal={finalTaxableTotal}
     taxTotal={finalTaxTotal}
