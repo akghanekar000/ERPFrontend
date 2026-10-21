@@ -263,7 +263,7 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
            {money(item.price)}
          </td>
          <td className={`${cell} text-right`}>
-           {item.gstRate}%
+           {money(item.discountAmount || 0)}
          </td>
          <td className={`${cell} text-right`}>
            {money(item.total)}
