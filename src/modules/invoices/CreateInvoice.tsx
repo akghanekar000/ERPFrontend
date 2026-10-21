@@ -602,6 +602,84 @@ export default function CreateInvoice() {
                       ))}
                     </select>
                   </div>
+                  
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor={`hsn-sac-${item.id}`}
+                        className="block text-sm font-semibold text-slate-700"
+                      >
+                        HSN / SAC code (optional)
+                      </label>
+                      <input
+                        id={`hsn-sac-${item.id}`}
+                        type="text"
+                        value={item.hsnSac}
+                        onChange={(event) =>
+                          updateItem(item.id, {
+                            hsnSac: event.target.value,
+                          })
+                        }
+                        maxLength={20}
+                        placeholder="Enter HSN / SAC"
+                        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`discount-type-${item.id}`}
+                        className="block text-sm font-semibold text-slate-700"
+                      >
+                        Discount type
+                      </label>
+                        <select
+                          id={`discount-type-${item.id}`}
+                          value={item.discountType}
+                          onChange={(event) =>
+                            updateItem(item.id, {
+                              discountType: event.target.value as DiscountType,
+                              discountValue: 0,
+                            })
+                          }
+                          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3"
+                        >
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="amount">Fixed amount (₹)</option>
+                     </select>
+                 </div>
+
+                 <div>
+                   <label
+                     htmlFor={`discount-value-${item.id}`}
+                     className="block text-sm font-semibold text-slate-700"
+                   >
+                     Discount {item.discountType === 'percentage' ? '(%)' : '(₹)'}
+                   </label>
+                   <input
+                     id={`discount-value-${item.id}`}
+                     type="number"
+                     min="0"
+                     max={
+                       item.discountType === 'percentage'
+                       ? 100
+                       : item.enteredAmount
+                     }
+                     step="0.01"
+                     value={item.discountValue}
+                     onChange={(event) =>
+                       updateItem(item.id, {
+                         discountValue: Math.max(
+                           0,
+                         Number(event.target.value) || 0,
+                         ),
+                         })
+                       }
+                     className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+                   />
+              </div>
+            </div>
+
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
