@@ -224,6 +224,9 @@ export default function CreateInvoice() {
         qty: 1,
         gstRate: Number(firstProduct.gstRate ?? 0),
         priceMode: 'exclusive',
+        hsnSac: '',
+        discountType: 'percentage',
+        discountValue: 0,
       },
     ]);
   };
