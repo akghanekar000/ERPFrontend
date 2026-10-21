@@ -18,18 +18,24 @@ import type { Customer } from '../../services/customers.service';
 
 type PriceMode = 'inclusive' | 'exclusive';
 
+type DiscountType = 'amount' | 'percentage';
 type InvoiceLine = {
   id: string;
   productId: string;
   qty: number;
   gstRate: number;
   priceMode: PriceMode;
+  hsnSac: string;
+  discountType: discountType;
+  discountValue: number;
 };
 
 type CalculatedLine = InvoiceLine & {
   product?: Product;
   price: number;
   enteredAmount: number;
+  discountAmount: number;
+  discountedAmount: number;
   taxableAmount: number;
   taxAmount: number;
   total: number;
@@ -112,19 +118,29 @@ export default function CreateInvoice() {
       const product = products.find(
         (candidate) => productIdOf(candidate) === item.productId,
       );
-
       const price = Number(product?.price ?? 0);
       const enteredAmount = roundMoney(price * item.qty);
 
+      const requestedDiscount = item.discountType == 'percentage'
+        ?enteredAmount * Math.min(100,Math.max(0,
+    item.discountValue))/100
+        :Math.max(0,item.discountValue);
+      const discountAmount = roundMoney(
+        Math.min(enteredAmount,requestedDiscount),
+      );
+      const discountedAmount = roundMoney(
+        enteredAmount- discountAmount,
+      );
+
       const taxableAmount = roundMoney(
         item.priceMode === 'inclusive'
-          ? enteredAmount / (1 + item.gstRate / 100)
-          : enteredAmount,
+          ? discountedAmount / (1 + item.gstRate / 100)
+          : discountedAmount,
       );
 
       const taxAmount = roundMoney(
         item.priceMode === 'inclusive'
-          ? enteredAmount - taxableAmount
+          ? discountedAmount - taxableAmount
           : taxableAmount * item.gstRate / 100,
       );
 
@@ -133,6 +149,8 @@ export default function CreateInvoice() {
         product,
         price,
         enteredAmount,
+        discountAmount,
+        discountedAmount,
         taxableAmount,
         taxAmount,
         total: roundMoney(taxableAmount + taxAmount),
