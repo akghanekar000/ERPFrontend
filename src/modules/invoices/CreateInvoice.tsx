@@ -770,6 +770,12 @@ export default function CreateInvoice() {
                       </span>
                     </div>
                     <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Discount</span>
+                      <span className="text-slate-900">
+                        −{money(item.discountAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
                       <span className="text-slate-500">Taxable amount</span>
                       <span className="text-slate-900">
                         {money(item.taxableAmount)}
