@@ -247,7 +247,9 @@ export default function DefaultInvoiceTemplate({ data }: Props) {
          <td className={`${cell} break-words`}>
            {item.name}
          </td>
-         <td className={cell}>—</td>
+         <td className={cell}>
+           {item.hsnSac?.trim() || '—'}
+         </td>
          <td className={`${cell} text-right`}>
            {item.qty}
          </td>
