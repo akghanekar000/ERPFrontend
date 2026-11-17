@@ -1,6 +1,13 @@
 
 import { API, handleResponse, getAuthHeaders } from "./_fetch";
 
+export type InvoiceNumberingSettings = {
+  automaticNumbering: boolean;
+  savePrefixForFuture: boolean;
+  savedPrefix: string;
+  usePrefix?: boolean;
+};
+
 export type Company = {
   _id?: string;
   companyName: string;
@@ -16,6 +23,8 @@ export type Company = {
   accountNumber: string;
   ifscCode: string;
   branch: string;
+
+  invoiceNumbering?: InvoiceNumberingSettings;
 };
 
 export type CompanyPayload = {
@@ -32,6 +41,8 @@ export type CompanyPayload = {
   accountNumber: string;
   ifscCode: string;
   branch: string;
+
+  invoiceNumbering?: InvoiceNumberingSettings;
 };
 
 export async function getCompany(): Promise<Company | null> {
@@ -58,6 +69,6 @@ export async function saveCompany(
     body: JSON.stringify(payload),
   });
 
-  return handleResponse(response);
+  return handleResponse(r
+                        esponse);
 }
-
