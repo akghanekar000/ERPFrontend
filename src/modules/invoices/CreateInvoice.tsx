@@ -26,7 +26,7 @@ type InvoiceLine = {
   gstRate: number;
   priceMode: PriceMode;
   hsnSac: string;
-  discountType: discountType;
+  discountType: DiscountType;
   discountValue: number;
 };
 
