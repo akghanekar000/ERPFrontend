@@ -392,7 +392,8 @@ export default function CreateInvoice() {
         id="invoiceNumber"
         type="text"
         value={invoiceNumber}
-        onChange={(event) => setInvoiceNumber(event.target.value)}
+        onChange={(event) =>
+      setInvoiceNumber(event.target.value)}
         placeholder="Leave blank for automatic numbering"
         maxLength={50}
         className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
