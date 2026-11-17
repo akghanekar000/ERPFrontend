@@ -64,6 +64,8 @@ export default function CreateInvoice() {
   const [company, setCompany] = useState<Company | null>(null);
   const [customerId, setCustomerId] = useState('');
   const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [usePrefix, setUsePrefix] = useState(false);
+  const [prefix, setPrefix] = useState('');
   const [jurisdiction, setJurisdiction] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(() => {
     const now = new Date();
@@ -82,6 +84,13 @@ export default function CreateInvoice() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const automaticNumbering =
+  company?.invoiceNumbering?.automaticNumbering ?? true;
+
+  const savedPrefix =
+    company?.invoiceNumbering?.savePrefixForFuture
+      ? company.invoiceNumbering.savedPrefix || ''
+      : '';
 
   useEffect(() => {
     let active = true;
