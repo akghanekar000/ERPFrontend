@@ -6,7 +6,14 @@ import {
   getCompany,
   saveCompany,
   type CompanyPayload,
+  type InvoiceNumberingSettings,
 } from "../../services/company.service";
+
+const emptyNumbering: InvoiceNumberingSettings = {
+  automaticNumbering: true,
+  savePrefixForFuture: false,
+  savedPrefix: "",
+};
 
 const emptyCompany: CompanyPayload = {
   companyName: "",
@@ -21,10 +28,14 @@ const emptyCompany: CompanyPayload = {
   accountNumber: "",
   ifscCode: "",
   branch: "",
+  invoiceNumbering: emptyNumbering,
 };
 
 export default function BusinessInfo() {
   const [form, setForm] = useState<CompanyPayload>(emptyCompany);
+  const [numbering, setNumbering] =
+    useState<InvoiceNumberingSettings>(emptyNumbering);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -51,6 +62,16 @@ export default function BusinessInfo() {
             accountNumber: company.accountNumber || "",
             ifscCode: company.ifscCode || "",
             branch: company.branch || "",
+            invoiceNumbering: company.invoiceNumbering || emptyNumbering,
+          });
+
+          setNumbering({
+            automaticNumbering:
+              company.invoiceNumbering?.automaticNumbering ?? true,
+            savePrefixForFuture:
+              company.invoiceNumbering?.savePrefixForFuture ?? false,
+            savedPrefix:
+              company.invoiceNumbering?.savedPrefix || "",
           });
         }
       } catch (err) {
@@ -82,9 +103,37 @@ export default function BusinessInfo() {
     setError("");
   }
 
+  function updateNumbering(
+    field: keyof InvoiceNumberingSettings,
+    value: string | boolean
+  ) {
+    setNumbering((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+    setMessage("");
+    setError("");
+  }
+
   async function handleSave() {
     if (!form.companyName.trim()) {
       setError("Please enter your company name.");
+      return;
+    }
+
+    if (
+      numbering.savePrefixForFuture &&
+      numbering.savedPrefix.trim().length === 0
+    ) {
+      setError("Enter a prefix or turn off Save prefix for future invoices.");
+      return;
+    }
+
+    if (
+      numbering.savedPrefix.length > 15 ||
+      /\s/.test(numbering.savedPrefix.trim())
+    ) {
+      setError("Prefix must be 15 characters or fewer and contain no spaces.");
       return;
     }
 
@@ -107,12 +156,20 @@ export default function BusinessInfo() {
         accountNumber: form.accountNumber.trim(),
         ifscCode: form.ifscCode.trim().toUpperCase(),
         branch: form.branch.trim(),
+        invoiceNumbering: {
+          automaticNumbering: numbering.automaticNumbering,
+          savePrefixForFuture: numbering.savePrefixForFuture,
+          savedPrefix: numbering.savePrefixForFuture
+            ? numbering.savedPrefix.trim()
+            : "",
+        },
       });
 
       if (result.company) {
         const company = result.company;
 
-        setForm({
+        setForm((previous) => ({
+          ...previous,
           companyName: company.companyName || "",
           gstin: company.gstin || "",
           email: company.email || "",
@@ -125,10 +182,19 @@ export default function BusinessInfo() {
           accountNumber: company.accountNumber || "",
           ifscCode: company.ifscCode || "",
           branch: company.branch || "",
+        }));
+
+        setNumbering({
+          automaticNumbering:
+            company.invoiceNumbering?.automaticNumbering ?? true,
+          savePrefixForFuture:
+            company.invoiceNumbering?.savePrefixForFuture ?? false,
+          savedPrefix:
+            company.invoiceNumbering?.savedPrefix || "",
         });
       }
 
-      setMessage("Company and bank details saved successfully.");
+      setMessage("Company, bank and invoice numbering settings saved.");
     } catch (err) {
       setError(
         err instanceof Error
@@ -246,6 +312,53 @@ export default function BusinessInfo() {
           onChange={(e) => updateField("branch", e.target.value)}
         />
 
+        <h4 style={{ gridColumn: "1 / -1", marginBottom: 0 }}>
+          Invoice Number Settings
+        </h4>
+
+        <label style={{ gridColumn: "1 / -1" }}>
+          <input
+            type="checkbox"
+            checked={numbering.automaticNumbering}
+            onChange={(e) =>
+              updateNumbering("automaticNumbering", e.target.checked)
+            }
+          />{" "}
+          Enable automatic invoice numbering
+        </label>
+
+        <p style={{ gridColumn: "1 / -1", color: "#64748b", margin: 0 }}>
+          When disabled, you must enter the invoice number manually while
+          creating an invoice.
+        </p>
+
+        <label style={{ gridColumn: "1 / -1" }}>
+          <input
+            type="checkbox"
+            checked={numbering.savePrefixForFuture}
+            onChange={(e) =>
+              updateNumbering("savePrefixForFuture", e.target.checked)
+            }
+          />{" "}
+          Save prefix for future invoices
+        </label>
+
+        {numbering.savePrefixForFuture && (
+          <div style={{ gridColumn: "1 / -1" }}>
+            <Input
+              placeholder="Invoice prefix, e.g. AKT-"
+              value={numbering.savedPrefix}
+              onChange={(e) =>
+                updateNumbering("savedPrefix", e.target.value)
+              }
+            />
+            <p style={{ color: "#64748b", fontSize: 12 }}>
+              This prefix will be suggested when creating invoices. It will
+              not be applied automatically.
+            </p>
+          </div>
+        )}
+
         <Button
           variant="primary"
           onClick={handleSave}
@@ -257,4 +370,3 @@ export default function BusinessInfo() {
     </div>
   );
 }
-
