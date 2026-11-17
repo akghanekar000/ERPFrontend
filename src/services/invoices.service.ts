@@ -8,7 +8,10 @@ export type InvoiceItem = {
   price: number;
   priceMode: 'inclusive' | 'exclusive';
   gstRate: number;
-};
+  hsnSac?: string;
+  discountPercent?: number;
+  discountAmount?: number;
+  };
 
 export type InvoicePayload = {
   customer: string;
@@ -17,7 +20,12 @@ export type InvoicePayload = {
   invoiceNumber?: string;
   invoiceDate?: string;
   jurisdiction?: string;
-};
+  automaticNumbering?: boolean;
+  userPrefix?: boolean;
+  prefix?: string;
+  freightCharges?: number;
+  packingCharges?: number;
+  };
 
 export type Invoice = {
   id?: string;
