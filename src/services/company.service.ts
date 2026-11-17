@@ -69,6 +69,5 @@ export async function saveCompany(
     body: JSON.stringify(payload),
   });
 
-  return handleResponse(r
-                        esponse);
+  return handleResponse(response);
 }
