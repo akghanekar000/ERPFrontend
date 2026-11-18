@@ -21,7 +21,7 @@ export type InvoicePayload = {
   invoiceDate?: string;
   jurisdiction?: string;
   automaticNumbering?: boolean;
-  userPrefix?: boolean;
+  usePrefix?: boolean;
   prefix?: string;
   freightCharges?: number;
   packingCharges?: number;
