@@ -105,13 +105,19 @@ export async function updateInvoicePaymentStatus(
   return handleResponse(res);
 }
 
-export async function deleteInvoice(id: string) {
+
+export async function deleteInvoice(
+  id: string,
+  credentials: { email: string; password: string },
+) {
   const res = await fetch(`${API}/api/invoices/${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
+    body: JSON.stringify(credentials),
   });
+
   return handleResponse(res);
 }
