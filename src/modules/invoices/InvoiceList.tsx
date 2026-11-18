@@ -681,7 +681,8 @@ export default function InvoiceList() {
                     <th className="px-5 py-4 text-right font-semibold">
                       Total
                     </th>
-                    <th className="px-5 py-4 font-semibold">Status</th>
+                    <th className="px-5 py-4 font-semibold">Invoice status</th>
+                    <th className="px-5 py-4 font-semibold">Payment status</th>
                     <th className="px-5 py-4 text-right font-semibold">
                       Actions
                     </th>
