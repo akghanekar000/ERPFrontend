@@ -89,6 +89,21 @@ export async function createInvoice(payload: InvoicePayload): Promise<Invoice> {
   });
   return handleResponse(res);
 }
+export async function updateInvoicePaymentStatus(
+  id: string,
+  paymentStatus: 'paid' | 'unpaid',
+) {
+  const res = await fetch(`${API}/api/invoices/${id}/payment-status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ paymentStatus }),
+  });
+
+  return handleResponse(res);
+}
 
 export async function deleteInvoice(id: string) {
   const res = await fetch(`${API}/api/invoices/${id}`, {
