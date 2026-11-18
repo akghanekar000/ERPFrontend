@@ -600,11 +600,26 @@ export default function InvoiceList() {
                         </p>
                       </div>
 
-                      <span
-                        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusClass(invoice.status)}`}
-                      >
-                        {invoice.status ?? 'UNPAID'}
-                      </span>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
+                          SAVED
+                        </span>
+
+                        <select
+                          value={invoice.paymentStatus ?? 'unpaid'}
+                          onChange={(event) =>
+                           handlePaymentStatusChange(
+                             invoice,
+                             event.target.value as 'paid' | 'unpaid',
+                           )
+                         }
+                         className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold"
+                         aria-label={`Payment status for invoice ${invoiceNumber(invoice)}`}
+                         >
+                         <option value="unpaid">Unpaid</option>
+                         <option value="paid">Paid</option>
+                       </select>
+                     </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 border-t border-gray-100 pt-3">
