@@ -381,28 +381,77 @@ export default function CreateInvoice() {
 
   <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
     <div>
-      <label
-        htmlFor="invoiceNumber"
-        className="block text-sm font-semibold text-slate-700"
-      >
-        Invoice number
+  <label
+    htmlFor="invoiceNumber"
+    className="block text-sm font-semibold text-slate-700"
+  >
+    Invoice number
+  </label>
+
+  <input
+    id="invoiceNumber"
+    type="text"
+    value={invoiceNumber}
+    onChange={(event) => setInvoiceNumber(event.target.value)}
+    placeholder={
+      automaticNumbering
+        ? 'Leave blank for automatic numbering'
+        : 'Enter invoice number manually'
+    }
+    maxLength={50}
+    required={!automaticNumbering}
+    className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
+  />
+
+  <p className="mt-1 text-xs text-slate-500">
+    {automaticNumbering
+      ? 'Leave blank to generate the next number automatically. You may also enter a number manually.'
+      : 'Automatic numbering is disabled. Enter an invoice number manually.'}
+  </p>
+
+  {automaticNumbering && (
+    <div className="mt-4 space-y-3">
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <input
+          type="checkbox"
+          checked={usePrefix}
+          onChange={(event) => {
+            setUsePrefix(event.target.checked);
+            if (!event.target.checked) setPrefix('');
+          }}
+        />
+        Use an invoice prefix
       </label>
 
-      <input
-        id="invoiceNumber"
-        type="text"
-        value={invoiceNumber}
-        onChange={(event) =>
-      setInvoiceNumber(event.target.value)}
-        placeholder="Leave blank for automatic numbering"
-        maxLength={50}
-        className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3"
-      />
+      {usePrefix && (
+        <input
+          type="text"
+          value={prefix}
+          onChange={(event) => setPrefix(event.target.value)}
+          placeholder="Enter prefix, e.g. AKT-"
+          maxLength={15}
+          className="w-full rounded-xl border border-slate-300 px-3 py-3"
+        />
+      )}
 
-      <p className="mt-1 text-xs text-slate-500">
-        Leave blank to use the next automatic invoice number.
-      </p>
+      {savedPrefix && !usePrefix && (
+        <button
+          type="button"
+          onClick={() => {
+            setUsePrefix(true);
+            setPrefix(savedPrefix);
+          }}
+          className="rounded-lg border border-blue-300 px-3 py-2 text-sm font-semibold text-blue-700"
+        >
+          Use saved prefix: {savedPrefix}
+        </button>
+      )}
     </div>
+  )}
+</div>
+      
+
+      
 
     <div>
       <label
