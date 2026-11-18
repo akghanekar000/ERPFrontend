@@ -271,6 +271,15 @@ export default function CreateInvoice() {
   ) => {
     event.preventDefault();
     setError('');
+    if (!automaticNumbering && !invoiceNumber.trim()) {
+  setError('Enter an invoice number because automatic numbering is disabled.');
+  return;
+}
+
+if (usePrefix && (!prefix.trim() || /\s/.test(prefix.trim()))) {
+  setError('Enter a valid prefix without spaces.');
+  return;
+}
 
     if (!customerId) {
       setError('Please select a customer.');
@@ -302,21 +311,39 @@ export default function CreateInvoice() {
 
     try {
       await createInvoice({
-        customer: customerId,
-        invoiceNumber: invoiceNumber.trim() || undefined,
-        jurisdiction: jurisdiction.trim(),
-        invoiceDate,
-        freightCharges,
-        packingCharges,
-        items: lines.map((item) => ({
-        product: item.productId,
-        qty: item.qty,
-        price: item.price,
-        priceMode: item.priceMode,
-        gstRate: item.gstRate,
-        })),
-      notes: notes.trim(),
-     });
+  customer: customerId,
+  invoiceNumber: invoiceNumber.trim() || undefined,
+  automaticNumbering,
+  usePrefix: automaticNumbering && usePrefix,
+  prefix: automaticNumbering && usePrefix
+    ? prefix.trim()
+    : '',
+  jurisdiction: jurisdiction.trim(),
+  invoiceDate,
+  freightCharges,
+  packingCharges,
+
+  items: lines.map((item) => ({
+    product: item.productId,
+    qty: item.qty,
+    price: item.price,
+    priceMode: item.priceMode,
+    gstRate: item.gstRate,
+    hsnSac: item.hsnSac,
+
+    discountPercent:
+      item.discountType === 'percentage'
+        ? item.discountValue
+        : 0,
+
+    discountAmount:
+      item.discountType === 'amount'
+        ? item.discountValue
+        : 0,
+  })),
+
+  notes: notes.trim(),
+});
 
       navigate('/invoices');
     } catch (err: unknown) {
@@ -921,6 +948,7 @@ export default function CreateInvoice() {
       }
 
       setError('');
+      
       setShowPreview(true);
     }}
       disabled={!customers.length || !products.length}
