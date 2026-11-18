@@ -11,6 +11,7 @@ import { useAuth } from '../../components/AuthContext';
 import {
   listInvoices,
   deleteInvoice,
+  updateInvoicePaymentStatus,
 } from '../../services/invoices.service';
 import { getCompany } from '../../services/company.service';
 import type { Company } from '../../services/company.service';
@@ -70,6 +71,8 @@ type InvoiceRow = {
   subtotal?: number;
   tax?: number;
   total?: number;
+  invoiceStatus?: 'saved';
+  paymentStatus?: 'paid' | 'unpaid';
   status?: string;
 };
 
@@ -192,12 +195,10 @@ export default function InvoiceList() {
   );
 
   const unpaidTotal = invoices.reduce((sum, invoice) => {
-    const status = String(invoice.status ?? 'UNPAID').toUpperCase();
-
-    return status === 'UNPAID'
-      ? sum + Number(invoice.total ?? 0)
-      : sum;
-  }, 0);
+  return invoice.paymentStatus === 'unpaid'
+    ? sum + Number(invoice.total ?? 0)
+    : sum;
+}, 0);
 
   function exportCsv() {
     const rows = filtered.map((invoice) => ({
@@ -342,6 +343,34 @@ export default function InvoiceList() {
     }
   }
 
+  async function handlePaymentStatusChange(
+  invoice: InvoiceRow,
+  paymentStatus: 'paid' | 'unpaid',
+) {
+  const id = invoiceId(invoice);
+
+  if (!id) {
+    toast.error('This invoice has no valid ID.');
+    return;
+  }
+
+  try {
+    await updateInvoicePaymentStatus(id, paymentStatus);
+
+    setInvoices((current) =>
+      current.map((item) =>
+        invoiceId(item) === id
+          ? { ...item, paymentStatus }
+          : item,
+      ),
+    );
+
+    toast.success('Payment status updated.');
+  } catch {
+    toast.error('Could not update payment status.');
+  }
+  }
+  
   async function handleDelete(invoice: InvoiceRow) {
     const id = invoiceId(invoice);
 
