@@ -712,12 +712,27 @@ export default function InvoiceList() {
                         </td>
 
                         <td className="px-5 py-4">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusClass(invoice.status)}`}
-                          >
-                            {invoice.status ?? 'UNPAID'}
-                          </span>
-                        </td>
+                         <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
+                           SAVED
+                         </span>
+                       </td>
+
+                       <td className="px-5 py-4">
+                         <select
+                           value={invoice.paymentStatus ?? 'unpaid'}
+                           onChange={(event) =>
+                             handlePaymentStatusChange(
+                               invoice,
+                               event.target.value as 'paid' | 'unpaid',
+                             )
+                           }
+                           className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                           aria-label={`Payment status for invoice ${invoiceNumber(invoice)}`}
+                         >
+                           <option value="unpaid">Unpaid</option>
+                           <option value="paid">Paid</option>
+                         </select>
+                       </td>
 
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
