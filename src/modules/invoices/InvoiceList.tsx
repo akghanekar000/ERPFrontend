@@ -112,6 +112,9 @@ export default function InvoiceList() {
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<InvoiceRow | null>(null);
+  const [deleteEmail, setDeleteEmail] = useState(user?.email ?? '');
+  const [deletePassword, setDeletePassword] = useState('');
   const [logo, setLogo] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] =
     useState<InvoiceRow | null>(null);
@@ -371,49 +374,63 @@ export default function InvoiceList() {
   }
   }
   
-  async function handleDelete(invoice: InvoiceRow) {
-    const id = invoiceId(invoice);
+  
+function handleDelete(invoice: InvoiceRow) {
+  const id = invoiceId(invoice);
 
-    if (!id) {
-      toast.error('This invoice has no valid ID.');
-      return;
-    }
+  if (!id) {
+    toast.error('This invoice has no valid ID.');
+    return;
+  }
 
-    if (
-      !window.confirm(
-        `Delete invoice "${invoiceNumber(invoice)}"? This cannot be undone.`
-      )
-    ) {
-      return;
-    }
+  setDeleteEmail(user?.email ?? '');
+  setDeletePassword('');
+  setDeleteTarget(invoice);
+}
 
-    setDeletingId(id);
+async function confirmDelete() {
+  if (!deleteTarget) return;
+
+  const id = invoiceId(deleteTarget);
+
+  if (!deleteEmail.trim() || !deletePassword) {
+    toast.error('Enter your account email and password.');
+    return;
+  }
+
+  setDeletingId(id);
+
+  try {
+    await deleteInvoice(id, {
+      email: deleteEmail.trim(),
+      password: deletePassword,
+    });
+
+    setInvoices((current) =>
+      current.filter((item) => invoiceId(item) !== id)
+    );
 
     try {
-      await deleteInvoice(id);
-
-      setInvoices((current) =>
-        current.filter((item) => invoiceId(item) !== id)
-      );
-
-      try {
-        await addAuditLogEntry({
-          user: user?.name || 'Unknown',
-          action: 'Delete Invoice',
-          timestamp: new Date().toISOString(),
-          details: `Invoice ID: ${id}`,
-        });
-      } catch {
-        toast.warning('Invoice deleted, but audit logging failed.');
-      }
-
-      toast.success('Invoice deleted.');
+      await addAuditLogEntry({
+        user: user?.name || 'Unknown',
+        action: 'Delete Invoice',
+        timestamp: new Date().toISOString(),
+        details: `Invoice ID: ${id}`,
+      });
     } catch {
-      toast.error('Could not delete invoice.');
-    } finally {
-      setDeletingId(null);
+      toast.warning('Invoice deleted, but audit logging failed.');
     }
+
+    toast.success('Invoice deleted.');
+    setDeleteTarget(null);
+    setDeletePassword('');
+  } catch {
+    toast.error('Could not delete invoice. Check your email and password.');
+  } finally {
+    setDeletingId(null);
   }
+}
+  
 
   function statusClass(status?: string) {
     const value = String(status ?? 'UNPAID').toUpperCase();
@@ -774,6 +791,79 @@ export default function InvoiceList() {
         )}
       </section>
 
+       
+{deleteTarget && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <h2 className="text-xl font-bold text-gray-900">
+        Confirm invoice deletion
+      </h2>
+
+      <p className="mt-2 text-sm text-gray-600">
+        You are deleting invoice{' '}
+        <strong>{invoiceNumber(deleteTarget)}</strong>.
+        Enter your account credentials to confirm.
+      </p>
+
+      <div className="mt-5 space-y-4">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Account email
+          </label>
+          <input
+            type="email"
+            value={deleteEmail}
+            onChange={(event) => setDeleteEmail(event.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2"
+            placeholder="Enter your account email"
+            autoComplete="username"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Account password
+          </label>
+          <input
+            type="password"
+            value={deletePassword}
+            onChange={(event) => setDeletePassword(event.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2"
+            placeholder="Enter your password"
+            autoComplete="current-password"
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          disabled={deletingId === invoiceId(deleteTarget)}
+          onClick={() => {
+            setDeleteTarget(null);
+            setDeletePassword('');
+          }}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          disabled={deletingId === invoiceId(deleteTarget)}
+          onClick={confirmDelete}
+          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          {deletingId === invoiceId(deleteTarget)
+            ? 'Deleting...'
+            : 'Confirm Delete'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+      
       {selectedInvoice && (
         <InvoicePreview
           jurisdiction={selectedInvoice.jurisdiction}
